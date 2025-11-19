@@ -1,31 +1,42 @@
 
+window_len = 30            # sliding window length
+step = 1                   # step size for sliding windows
+batch_size = 64            # dataloader batch size
+scaling_range = (-1, 1)    # MinMaxScaling range
+expected_features = 14     # multivariate time-series dimensionality
 
-import torch
-import torch.nn as nn
-import torch.optim as optim
 
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+#GAN configs
+z_dim = 100            # latent space dimension
+gf_dim = 128           # generator base filters
+df_dim = 32            # discriminator base filters
+channels = 14          # GAN input channels = number of time-series features
 
-# Model parameters
-z_dim = 100
-gf_dim = 128
-df_dim = 32
-channels = 1
 
-# Training parameters
-epochs = 150
-lr_G = 0.0002
-lr_D = 0.0001
-betas = (0.5, 0.999)
+#Training settings
+epochs_gan = 10        # GAN training epochs
+epochs_enc = 20        # Encoder training epochs
+lr_gan = 2e-4          # Adam lr for generator
+lr_disc = 1e-4         # Adam lr for discriminator
+lr_enc = 1e-4          # Adam lr for encoder
+betas = (0.5, 0.999)   # Adam betas for stability
 
-# Labels for label smoothing
-real_label_val = 0.9
-fake_label_val = 0.1
 
-# Loss function
-criterion = nn.BCELoss()
+alpha_rec = 1.0        # reconstruction loss weight
+beta_feat = 0.1        # feature-matching loss weight
 
-# Add noise function -- discriminator was overtaking generator in our training 
+
+#anomaly scoring
+anomaly_alpha = 0.9   
+
+#optional noise injection -- not implemented in the ready model -- 
+'''
 def add_noise(x, std=0.05):
+    """Apply Gaussian noise to stabilise D training."""
     return x + torch.randn_like(x) * std
+'''
+
+
+bce_logits = nn.BCEWithLogitsLoss()  # loss for GAN
+mse_loss = nn.MSELoss()              # for encoder reconstruction + feature matching
 
