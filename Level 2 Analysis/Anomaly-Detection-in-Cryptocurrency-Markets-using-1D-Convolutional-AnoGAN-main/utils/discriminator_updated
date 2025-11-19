@@ -1,0 +1,27 @@
+
+class Discriminator1D(nn.Module):
+    def __init__(self, c_dim=1, df_dim=32):
+        super().__init__()
+
+        # Layer: Conv -> ELU
+        self.conv0 = nn.Conv1d(c_dim, df_dim, kernel_size=4, stride=2, padding=1, bias=False)
+        self.elu0 = nn.ELU(inplace=True)
+
+        # Layer: Conv -> BN -> ELU
+        self.conv1 = nn.Conv1d(df_dim, df_dim * 2, kernel_size=4, stride=2, padding=1, bias=False)
+        self.bn1   = nn.BatchNorm1d(df_dim * 2)
+        self.elu1  = nn.ELU(inplace=True)
+
+        # Final conv
+        self.conv2 = nn.Conv1d(df_dim * 2, 1, kernel_size=4, stride=1, padding=0, bias=False)
+
+    def forward(self, x):
+        h0 = self.elu0(self.conv0(x))                        # [B, df_dim, L/2]
+        h1 = self.elu1(self.bn1(self.conv1(h0)))             # [B, df_dim*2, L/4]
+
+        h2 = self.conv2(h1)                                  # [B, 1, ?]
+
+        feat = h1.mean(dim=2)                                # Feature vector: [B, df_dim*2]
+        out = h2.mean(dim=2).view(-1)                        # Scalar output: [B]
+
+        return feat, out
