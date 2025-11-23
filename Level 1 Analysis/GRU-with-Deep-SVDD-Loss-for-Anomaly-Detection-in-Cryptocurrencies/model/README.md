@@ -1,0 +1,1 @@
+Models and Scaler are placed in here. Pretrained models and scaler can be downloaded from:
