@@ -1,7 +1,7 @@
 import torch
 import numpy as np
 import pandas as pd
-import pickle
+from sklearn.preprocessing import MinMaxScaler
 from tqdm import tqdm
 import torch.nn as nn
 from utils.generator_updated import Generator1D
@@ -11,16 +11,14 @@ from utils.preprocessing import prepare_df, sliding_windows
 from utils.visualization import plot_anomaly_context, plot_anogan_anomaly_scores
 import config as config
 
-with open('../models/scaler.save', 'rb') as f:
-    scaler = pickle.load(f)
 
-G = Generator1D(z_dim=config.z_dim).to(config.device)
-D = Discriminator1D().to(config.device)
-E = Encoder1D(z_dim=config.z_dim, c_dim=config.channels, seq_len=config.window_len).to(config.device)
+G = Generator1D(z_dim=config.Z_DIM).to(config.DEVICE)
+D = Discriminator1D().to(config.DEVICE)
+E = Encoder1D(z_dim=config.Z_DIM, c_dim=config.CHANNELS, seq_len=config.WINDOW_LEN).to(config.DEVICE)
 
-G.load_state_dict(torch.load("../models/generator.pth", map_location=config.device))
-D.load_state_dict(torch.load("../models/discriminator.pth", map_location=config.device))
-E.load_state_dict(torch.load("../models/encoder.pth", map_location=config.device))
+G.load_state_dict(torch.load("../models/generator.pth", map_location=config.DEVICE))
+D.load_state_dict(torch.load("../models/discriminator.pth", map_location=config.DEVICE))
+E.load_state_dict(torch.load("../models/encoder.pth", map_location=config.DEVICE))
 
 G.eval()
 D.eval()
@@ -28,17 +26,14 @@ E.eval()
 
 
 print("Preparing test data...")
-test_df = prepare_df('../data/test/ETH_1min.csv')
+test_df = prepare_df(config.TEST_DATA_PATH)
 test_arr = test_df.values
-
-test_arr_scaled = scaler.transform(test_arr)
-
-test_windows = sliding_windows(test_arr_scaled, window=config.window_len, step=config.step) # [N, window, F]
-
-X_test_tensor = torch.tensor(test_windows.transpose(0, 2, 1), dtype=torch.float32) # [N, F, window]
-
+scaler = MinMaxScaler(feature_range=(0, 1))
+test_arr_scaled = scaler.fit_transform(test_arr)
+test_windows = sliding_windows(test_arr_scaled, window=config.WINDOW_LEN, step=config.STEP)
+X_test_tensor = torch.tensor(test_windows.transpose(0, 2, 1), dtype=torch.float32)
 test_dataset = torch.utils.data.TensorDataset(X_test_tensor)
-test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=config.batch_size, shuffle=False)
+test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=config.BATCH_SIZE, shuffle=False)
 
 
 anomaly_scores = []
@@ -49,7 +44,7 @@ beta = 0.1
 
 with torch.no_grad():
     for (batch,) in tqdm(test_loader):
-        batch = batch.to(config.device)
+        batch = batch.to(config.DEVICE)
 
         z_enc = E(batch)
         rec = G(z_enc)
@@ -70,7 +65,7 @@ with torch.no_grad():
 anomaly_scores = np.array(anomaly_scores)
 
 results_df = pd.DataFrame(
-    index=test_df.index[config.window_len - 1:],
+    index=test_df.index[config.WINDOW_LEN - 1:],
     data={'anomaly_score': anomaly_scores}
 )
 

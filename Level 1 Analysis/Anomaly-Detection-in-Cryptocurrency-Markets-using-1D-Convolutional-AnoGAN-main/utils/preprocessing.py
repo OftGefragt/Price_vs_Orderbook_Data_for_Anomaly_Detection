@@ -4,7 +4,7 @@ import numpy as np
 from sklearn.preprocessing import MinMaxScaler
 import torch
 from torch.utils.data import TensorDataset, DataLoader
-import config
+import config as config
 import pandas as pd
 
 def sliding_windows(arr, window=30, step=1):
@@ -24,11 +24,11 @@ def prepare_df(path):
     feature_columns = ['Open', 'High', 'Low', 'Close', 'Volume']
     return df[feature_columns].copy()
 
-df = prepare_df(config.data_path)
+df = prepare_df(config.TRAIN_DATA_PATH)
 arr = df.values  # [T, F]
 F = arr.shape[1]
 
-windows = sliding_windows(arr, window=config.window_len, step=config.step)  # [N, window, channels]
+windows = sliding_windows(arr, window=config.WINDOW_LEN, step=config.STEP)  # [N, window, channels]
 # convert to [N, channels, seq_len]
 X = windows.transpose(0,2,1).astype(np.float32)  # [N, channels, window_len]
 print("windows shape", windows.shape, "X shape", X.shape)
@@ -42,10 +42,10 @@ X_scaled = windows_scaled.transpose(0,2,1)  # [N, 14, window_len]
 
 X_tensor = torch.tensor(X_scaled, dtype=torch.float32)
 dataset = TensorDataset(X_tensor)
-loader = DataLoader(dataset, batch_size=config.batch_size, shuffle=True, drop_last=True)
+loader = DataLoader(dataset, batch_size=config.BATCH_SIZE, shuffle=True, drop_last=True)
 
 #channels = 14 #chosen most important features -- adjust accordingly
-seq_len = config.window_len
+seq_len = config.WINDOW_LEN
 #print("final tensor shape", X_tensor.shape, "channels", channels, "seq_len", seq_len)
 
 # save scaler

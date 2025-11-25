@@ -2,7 +2,7 @@ import torch.nn as nn
 import config as config
 
 class Generator1D(nn.Module):
-    def __init__(self, z_dim=100, gf_dim=128, seq_len=config.seq_len, channels=config.channels):
+    def __init__(self, z_dim=100, gf_dim=128, seq_len=config.SEQ_LEN, channels=config.CHANNELS):
         super().__init__()
         # design to upsample from spatial 1 -> seq_len via ConvTranspose stack
         self.net = nn.Sequential(

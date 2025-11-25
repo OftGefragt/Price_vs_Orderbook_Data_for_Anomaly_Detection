@@ -1,0 +1,3 @@
+This folder contains a sample of the original data for training. For comparability, it only uses one-minute interval Bitcoin price data from `2021-04-01` to `2021-05-31`.
+
+To experiment with the full Bitcoin Historical Data set in 1-minute intervals, download it from [this link](https://www.kaggle.com/datasets/patrickgendotti/btc-and-eth-1min-price-history/data) below and place the extracted `.csv` file in this folder.

@@ -1,9 +1,9 @@
 import torch.nn as nn
-import config
+import config as config
 import torch
 
 class Encoder1D(nn.Module):
-    def __init__(self, z_dim=100, c_dim=config.channels, ef_dim=64, seq_len=config.seq_len):
+    def __init__(self, z_dim=100, c_dim=config.CHANNELS, ef_dim=64, seq_len=config.SEQ_LEN):
         super().__init__()
         self.conv0 = nn.Conv1d(c_dim, ef_dim, 4, 2, 1)
         self.elu0 = nn.ELU(True)

@@ -1,39 +1,40 @@
 import torch.nn as nn
 from torch.ao.nn.quantized.functional import threshold
 
-window_len = 30            # sliding window length
-step = 1                   # step size for sliding windows
-batch_size = 64            # dataloader batch size
-scaling_range = (-1, 1)    # MinMaxScaling range
-expected_features = 14     # multivariate time-series dimensionality
+WINDOW_LEN = 30            # sliding window length
+STEP = 1                   # step size for sliding windows
+BATCH_SIZE = 64            # dataloader batch size
+SCALING_RANGE = (-1, 1)    # MinMaxScaling range
+EXPECTED_FEATURES = 5     # multivariate time-series dimensionality
 
 
-data_path = "../data/test/ETH_1min.csv"
-device = "cpu"
-seq_len = 30
+TRAIN_DATA_PATH = "../../data/train/BTC_1min.csv"
+TEST_DATA_PATH = "../../data/test/ETH_1min.csv"
+DEVICE = "cpu"
+SEQ_LEN = 30
 
 #GAN configs
-z_dim = 100            # latent space dimension
-gf_dim = 128           # generator base filters
-df_dim = 32            # discriminator base filters
-channels = 5          # GAN input channels = number of time-series features
+Z_DIM = 100            # latent space dimension
+GF_DIM = 128           # generator base filters
+DF_DIM = 32            # discriminator base filters
+CHANNELS = 5          # GAN input channels = number of time-series features
 
 
 #Training settings
-epochs_gan = 2        # GAN training epochs
-epochs_enc = 2        # Encoder training epochs
-lr_gan = 2e-4          # Adam lr for generator
-lr_disc = 1e-4         # Adam lr for discriminator
-lr_enc = 1e-4          # Adam lr for encoder
-betas = (0.5, 0.999)   # Adam betas for stability
+EPOCHS_GAN = 2       # GAN training epochs
+EPOCHS_EN = 2        # Encoder training epochs
+LR_GAN = 2e-4          # Adam lr for generator
+LR_DISC = 1e-4         # Adam lr for discriminator
+LR_ENG = 1e-4          # Adam lr for encoder
+BETAS = (0.5, 0.999)   # Adam betas for stability
 
 
-alpha_rec = 1.0        # reconstruction loss weight
-beta_feat = 0.1        # feature-matching loss weight
+ALPHA_REC = 1.0        # reconstruction loss weight
+BETA_FEAT = 0.1        # feature-matching loss weight
 
 
 #anomaly scoring
-anomaly_alpha = 0.9   
+ANOMALY_ALPHA = 0.9
 
 #optional noise injection -- not implemented in the ready model -- 
 '''
@@ -43,6 +44,6 @@ def add_noise(x, std=0.05):
 '''
 
 
-bce_logits = nn.BCEWithLogitsLoss()  # loss for GAN
-mse_loss = nn.MSELoss()              # for encoder reconstruction + feature matching
+BCE_LOGITS = nn.BCEWithLogitsLoss()  # loss for GAN
+MSE_LOSS = nn.MSELoss()              # for encoder reconstruction + feature matching
 

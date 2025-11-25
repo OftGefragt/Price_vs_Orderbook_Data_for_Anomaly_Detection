@@ -1,8 +1,8 @@
 import torch.nn as nn
-import config
+import config as config
 
 class Discriminator1D(nn.Module):
-    def __init__(self, c_dim=config.channels, df_dim=32):
+    def __init__(self, c_dim=config.CHANNELS, df_dim=32):
         super().__init__()
         self.conv0 = nn.Conv1d(c_dim, df_dim, 4, 2, 1, bias=False)
         self.elu0 = nn.ELU(True)

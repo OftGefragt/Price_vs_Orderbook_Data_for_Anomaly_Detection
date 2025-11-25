@@ -1,5 +1,7 @@
 import pickle
 import numpy as np
+from sklearn.preprocessing import MinMaxScaler
+
 from utils.eif_data_preparation import prepare_df
 from utils.eif_visualization import plot_eif_anomaly_scores, plot_anomaly_context
 import config
@@ -12,10 +14,8 @@ with open(config.EIF_PATH, "rb") as f:
 with open(config.OC_SVM_PATH, "rb") as f:
     oc_svm = pickle.load(f)
 
-with open(config.SCALER_PATH, "rb") as f:
-    scaler = pickle.load(f)
-
-X_test_scaled_numpy = scaler.transform(X_test_df)
+scaler = MinMaxScaler(feature_range=(0, 1))
+X_test_scaled_numpy = scaler.fit_transform(X_test_df)
 
 eif_scores = forest.compute_paths(X_in=X_test_scaled_numpy)
 
