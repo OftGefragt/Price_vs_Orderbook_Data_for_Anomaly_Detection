@@ -1,0 +1,1 @@
+The EIF model `eif_model.pkl` can be downloaded from [here](https://drive.google.com/file/d/1D6OreifuazjnxogjVEiLx-rOrnMeJ8S8/view?usp=sharing) and should be put in this folder.
