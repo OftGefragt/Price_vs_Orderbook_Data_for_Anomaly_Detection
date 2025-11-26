@@ -3,7 +3,7 @@ import pandas as pd
 
 def plot_eif_anomaly_scores(results_df, threshold):
     plt.figure(figsize=(15, 6))
-
+    # Separate normal and anomaly points for visualization
     normal_df = results_df[results_df['is_anomaly'] == False]
     anomaly_df = results_df[results_df['is_anomaly'] == True]
 
@@ -24,10 +24,10 @@ def plot_eif_anomaly_scores(results_df, threshold):
     plt.show()
 
 def plot_anomaly_context(test_data, anomaly_timestamp, window_minutes=30):
-    half_window = pd.Timedelta(minutes=window_minutes / 2)
+    half_window = pd.Timedelta(minutes=window_minutes / 2) # caluclate half window i.e. 15 min
     start_time = anomaly_timestamp - half_window
     end_time = anomaly_timestamp + half_window
-
+    # extract data in the time window around the anomaly
     context_df = test_data.loc[start_time:end_time]
 
     if context_df.empty:
@@ -36,7 +36,7 @@ def plot_anomaly_context(test_data, anomaly_timestamp, window_minutes=30):
 
     fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(15, 8), sharex=True,
                                    gridspec_kw={'height_ratios': [3, 1]})
-
+    # price data
     ax1.plot(context_df.index, context_df['Close'], label='Close Price', color='blue')
     ax1.fill_between(context_df.index, context_df['Low'], context_df['High'],
                      color='gray', alpha=0.3, label='High-Low Range')
@@ -45,7 +45,7 @@ def plot_anomaly_context(test_data, anomaly_timestamp, window_minutes=30):
     ax1.set_ylabel("Price (USD)")
     ax1.legend()
     ax1.grid(True)
-
+    # volume data
     ax2.bar(context_df.index, context_df['Volume'], width=0.0005, color='green', label='Volume')
     ax2.axvline(anomaly_timestamp, color='red', linestyle='--', lw=2)
     ax2.set_ylabel("Volume")

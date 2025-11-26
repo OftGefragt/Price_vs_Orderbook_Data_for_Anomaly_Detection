@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 from sklearn.preprocessing import MinMaxScaler
 import joblib
-
+# extract important features from dataset
 def prepare_df(path):
     df = pd.read_csv(path)
     df['Timestamp'] = pd.to_datetime(df['Unix Timestamp'], unit='s')
@@ -13,28 +13,28 @@ def prepare_df(path):
     feature_columns = ['Open', 'High', 'Low', 'Close', 'Volume']
     df = df[feature_columns].copy()
     return df
-
+# split data into train and test sets
 def split_test_train(df, split_ratio=0.8):
     num_train = int(len(df) * split_ratio)
     train= df[:num_train]
     test = df[num_train:]
     return train, test
-
+# scale data using MinMaxScaler for both train and test sets
 def scale_data(train_data, test_data):
     scaler = MinMaxScaler(feature_range=(0, 1))
     scaled_train_data = scaler.fit_transform(train_data)
     scaled_test_data = scaler.transform(test_data)
 
     # Save scaler for future new data
-    joblib.dump(scaler, '../model/scaler.save')
+    joblib.dump(scaler, '../models/scaler.save')
     return scaled_train_data, scaled_test_data
-
+# create sequences using sliding window approach
 def create_sequences(data, time_step=10):
     X = []
-    for i in range(len(data) - time_step + 1):
-        X.append(data[i:i+time_step])
+    for i in range(len(data) - time_step + 1): # iterate over data
+        X.append(data[i:i+time_step]) # append sequence of length time_step
     return np.array(X)
-
+# combine all steps to create train and test sequences
 def create_train_test_sequences(path, split_ratio=0.8, time_step=10):
     df_features = prepare_df(path)
     train_data, test_data = split_test_train(df_features, split_ratio)
@@ -47,11 +47,11 @@ def create_train_test_sequences(path, split_ratio=0.8, time_step=10):
     X_test = torch.tensor(X_test, dtype=torch.float32)
 
     return X_train, X_test, test_data
-
+# create test sequences only, with option to load existing scaler
 def create_test_sequence(path, time_step=10, load_scaler=False):
     df_features = prepare_df(path)
     if load_scaler:
-        scaler = joblib.load('../model/scaler.save')
+        scaler = joblib.load('../models/scaler.save')
     else:
         scaler = MinMaxScaler(feature_range=(0, 1))
     scaled_data = scaler.fit_transform(df_features)

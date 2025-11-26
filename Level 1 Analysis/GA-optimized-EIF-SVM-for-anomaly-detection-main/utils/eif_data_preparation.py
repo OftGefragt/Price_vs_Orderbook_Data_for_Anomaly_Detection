@@ -1,5 +1,5 @@
 import pandas as pd
-
+# extract important features from data
 def prepare_df(path):
     df = pd.read_csv(path)
     df['Timestamp'] = pd.to_datetime(df['Unix Timestamp'], unit='s')

@@ -1,7 +1,7 @@
 import numpy as np
 import random
 from eif.eif_class import iForest
-
+# apply initialization of population based on hyperparameter ranges
 def init_population(pop_size, feature_dim, n_obs):
     population = []
     for _ in range(pop_size):
@@ -13,7 +13,7 @@ def init_population(pop_size, feature_dim, n_obs):
         }
         population.append(chromosome)
     return population
-
+# evaluate fitness of a chromosome
 def fitness(chromosome, X, labels=None):
     forest = iForest(X, ntrees=chromosome['ntrees'], 
                      sample_size=chromosome['sample_size'], 
@@ -22,32 +22,33 @@ def fitness(chromosome, X, labels=None):
     
     if labels is not None:
         from sklearn.metrics import f1_score
-        preds = (scores > np.percentile(scores, 100*chromosome['contamination'])).astype(int)
+        preds = (scores > np.percentile(scores, 100*chromosome['contamination'])).astype(int) # 1 for anomaly, 0 for normal
         return f1_score(labels, preds)
     else:
         return np.var(scores)
-
+# select parents based on fitness
 def select_parents(population, fitnesses, num_parents):
-    idx = np.argsort(fitnesses)[-num_parents:]
+    idx = np.argsort(fitnesses)[-num_parents:] # select top num_parents
     return [population[i] for i in idx]
-
+# do crossove between two parents
 def crossover(parent1, parent2):
     child = {}
     for key in parent1.keys():
-        child[key] = random.choice([parent1[key], parent2[key]])
+        child[key] = random.choice([parent1[key], parent2[key]]) # uniform crossover
     return child
-
+# do mutation on a chromosome
 def mutate(chromosome, feature_dim, n_obs, mutation_rate=0.2):
     if random.random() < mutation_rate:
-        key = random.choice(list(chromosome.keys()))
+        key = random.choice(list(chromosome.keys())) # randomly select a hyperparameter to mutate
+        # based on which hyperparameter, assign a new random value within the defined range
         if key == 'ntrees':
-            chromosome[key] = random.randint(50, 300)
+            chromosome[key] = random.randint(50, 300) # apply new random number of trees
         elif key == 'sample_size':
-            chromosome[key] = random.randint(int(n_obs*0.5), n_obs)
+            chromosome[key] = random.randint(int(n_obs*0.5), n_obs) # apply new sample size for each tree
         elif key == 'contamination':
-            chromosome[key] = round(random.uniform(0.01, 0.2), 3)
+            chromosome[key] = round(random.uniform(0.01, 0.2), 3) #  apply new anomaly expected rate
         elif key == 'exlevel':
-            chromosome[key] = random.randint(0, feature_dim-1)
+            chromosome[key] = random.randint(0, feature_dim-1) # assign new extension level
     return chromosome
 
 def ga_eif(X, labels=None, pop_size=20, generations=10):
@@ -56,23 +57,23 @@ def ga_eif(X, labels=None, pop_size=20, generations=10):
     
     best_overall = None
     best_fitness_overall = -np.inf
-    
+    # GA main loop
     for gen in range(generations):
-        fitnesses = [fitness(ch, X, labels) for ch in population]
+        fitnesses = [fitness(ch, X, labels) for ch in population] # evaluate fitness
         gen_best_idx = np.argmax(fitnesses)
         gen_best_fitness = fitnesses[gen_best_idx]
         gen_best_chrom = population[gen_best_idx]
         
         print(f"Gen {gen} best fitness: {gen_best_fitness:.4f}")
         print(f"Gen {gen} best params: {gen_best_chrom}")
-        
+        # update overall best
         if gen_best_fitness > best_fitness_overall:
             best_fitness_overall = gen_best_fitness
             best_overall = gen_best_chrom.copy()
-        
+        # create next generation
         parents = select_parents(population, fitnesses, num_parents=pop_size//2)
         next_pop = parents.copy()
-        
+        # fill the rest of the population
         while len(next_pop) < pop_size:
             p1, p2 = random.sample(parents, 2)
             child = crossover(p1, p2)

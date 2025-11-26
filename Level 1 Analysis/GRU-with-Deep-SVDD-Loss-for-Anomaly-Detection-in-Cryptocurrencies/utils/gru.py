@@ -22,9 +22,9 @@ class GRUEncoder(nn.Module):
 def train_deep_svdd(gru_encoder, X, epochs=50, batch_size=64, lr=1e-3, lr_c=0.01, device='cpu'):
     gru_encoder.to(device)
     X = X.to(device)
-
+    # initialize center c as zero vector
     embedding_dim = gru_encoder.embedding_dim
-    c = torch.zeros(embedding_dim, device=device)
+    c = torch.zeros(embedding_dim, device=device) # center of the hypersphere
 
     optimizer = optim.Adam(gru_encoder.parameters(), lr=lr)
 
@@ -36,18 +36,18 @@ def train_deep_svdd(gru_encoder, X, epochs=50, batch_size=64, lr=1e-3, lr_c=0.01
         for batch_idx, (batch,) in enumerate(loader):
             batch = batch.to(device)
             optimizer.zero_grad()
-
+            # forward pass
             embeddings = gru_encoder(batch)
-
+            # compute loss
             diff = embeddings - c
             loss = torch.mean(torch.sum(diff**2, dim=1))
-
+            # backpropagation and optimization
             loss.backward()
             optimizer.step()
-
+            # update center c
             batch_center_update = torch.mean(diff.detach(), dim=0)
             c -= lr_c * batch_center_update
-
+            # accumulate loss
             total_loss += loss.item() * batch.size(0)
 
         avg_loss = total_loss / len(X)
