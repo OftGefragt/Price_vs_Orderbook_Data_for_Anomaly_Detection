@@ -14,3 +14,5 @@ To facilitate comparison and interpretability, dimensionality reduction techniqu
 
 Kindly refer to the model-specific readme files for further information within the repository. 
 
+Study conducted under the Artificial Intelligence course 2025, University of Eastern Finland. 
+![logo](Level 2 Analysis/ignore/ueflogo.jpg)
