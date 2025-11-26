@@ -21,8 +21,8 @@ CHANNELS = 5          # GAN input channels = number of time-series features
 
 
 #Training settings
-EPOCHS_GAN = 2       # GAN training epochs
-EPOCHS_EN = 2        # Encoder training epochs
+EPOCHS_GAN = 10       # GAN training epochs
+EPOCHS_EN = 20        # Encoder training epochs
 LR_GAN = 2e-4          # Adam lr for generator
 LR_DISC = 1e-4         # Adam lr for discriminator
 LR_ENG = 1e-4          # Adam lr for encoder
