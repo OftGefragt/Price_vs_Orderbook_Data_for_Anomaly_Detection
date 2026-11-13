@@ -1,0 +1,10 @@
+
+# Paper evaluation outputs
+results/*.npz
+results/*.csv
+results/*.md
+!results/.gitkeep
+.venv/
+__pycache__/
+*.pyc
+.ipynb_checkpoints/

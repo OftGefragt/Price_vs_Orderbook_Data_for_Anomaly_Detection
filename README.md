@@ -1,22 +1,95 @@
-# Comparison of Price and Orderbook Data for Anomaly Detection
+# Comparison of Price and Order-Book Data for Anomaly Detection
 
-The rapid growth of cryptocurrency markets has intensified the need for robust anomaly detection methods to identify abnormal trading patterns and potential market manipulation. This study investigates the effectiveness of different DL approaches for detecting anomalies in cryptocurrency market data. Specifically, we compare three models:
+This repository studies whether Level-2 order-book features improve unsupervised anomaly detection relative to Level-1 price and volume series in cryptocurrency markets. Three detector families are compared under a shared evaluation protocol:
 
- -f-AnoGAN, a generative adversarial network designed for unsupervised anomaly detection
- 
--Genetic algorithm-optimized extended Isolation Forest combined with a Support Vector Machine (SVM)
+1. f-AnoGAN with one-dimensional convolutions
+2. Extended Isolation Forest tuned by a genetic algorithm, followed by a one-class SVM stage
+3. A GRU encoder trained with a Deep SVDD objective
 
--Gated Recurrent Unit (GRU) network trained with a deep Support Vector Data Description (SVDD) loss.
- 
-The models are evaluated on two distinct types of market data: Level 1 data, comprising basic price and volume information, and Level 2 order book data, containing detailed bid-ask structures.
+Models are trained on Bitcoin data and evaluated on Ethereum data.
 
-To facilitate comparison and interpretability, dimensionality reduction techniques including Principal Component Analysis (PCA) and t-distributed Stochastic Neighbor Embedding (t-SNE) are applied to visualize the clustering of normal and anomalous observations. Our results provide insights into the relative utility of Level 1 versus Level 2 data for anomaly detection in cryptocurrency markets, and highlight the strengths and limitations of each modeling approach in capturing abnormal trading behaviors. The study aims to inform both academic research and practical applications in market surveillance, algorithmic trading, and financial risk management.
+The original course materials remain under `Level 1 Analysis/` and `Level 2 Analysis/`. The `paper_eval/` package provides a single runnable comparison that writes the main results table required for the accompanying paper draft.
 
-Kindly refer to the model-specific readme files for further information within the repository. 
+## Quick start in Google Colab
 
-Study conducted under the Artificial Intelligence course 2025, University of Eastern Finland. 
+1. Open [Google Colab](https://colab.research.google.com/).
+2. Upload or open `notebooks/L1_vs_L2_Comparison_Colab.ipynb` from this repository.
+3. Set the runtime to GPU if available.
+4. Run all cells.
 
-![logo](Level%202%20Analysis/ignore/ueflogo.jpg)
+The notebook clones this repository, installs `requirements-paper.txt`, runs the comparison, and displays `results/table5_main_comparison.csv`.
 
+Direct notebook path after cloning:
 
+```text
+notebooks/L1_vs_L2_Comparison_Colab.ipynb
+```
 
+## Local reproduction
+
+```bash
+git clone https://github.com/OftGefragt/Price_vs_Orderbook_Data_for_Anomaly_Detection.git
+cd Price_vs_Orderbook_Data_for_Anomaly_Detection
+python -m venv .venv
+source .venv/bin/activate   # Windows: .venv\Scripts\activate
+pip install -r requirements-paper.txt
+python -m paper_eval.run_comparison --max-l1-train 12000 --max-l1-test 8000 --seed 42
+```
+
+Outputs:
+
+| File | Content |
+|---|---|
+| `results/table5_main_comparison.csv` | Main numeric comparison |
+| `results/table5_main_comparison.md` | Markdown form of the same table |
+| `results/scores_*.npz` | Per-model anomaly scores on the test windows |
+
+## Data
+
+| Level | Train | Test | Resolution | Role |
+|---|---|---|---|---|
+| Level 1 | BTC OHLCV | ETH OHLCV | 1 minute | Price and volume only |
+| Level 2 | BTC order-book subset | ETH order-book subset | 5 minute | Selected depth and notional features |
+
+Exact counts, date ranges, and feature lists are documented in `docs/DATA_AND_PROTOCOL.md`.
+
+## Evaluation protocol
+
+Each detector produces a continuous anomaly score on the test windows. Flags are assigned with a shared top-quantile rule:
+
+- top 5 percent of scores
+- top 10 percent of scores
+
+Because the quantile rule fixes the flag rate by construction, the useful comparisons are:
+
+- agreement between models on the same data level (Jaccard against f-AnoGAN)
+- score dispersion
+- training and inference time
+- qualitative market-context plots retained from the earlier course outputs
+
+## Repository layout
+
+```text
+Level 1 Analysis/     Original Level-1 model packages and figures
+Level 2 Analysis/     Original Level-2 model packages and figures
+paper_eval/           Unified training and scoring code for the paper table
+notebooks/            Colab notebook
+docs/                 Formal notes on data, methods, and protocol
+results/              Generated tables and score files
+requirements-paper.txt
+```
+
+## Documentation
+
+- `docs/DATA_AND_PROTOCOL.md`: datasets, features, and scoring rules
+- `docs/METHODS.md`: short method descriptions aligned with the code
+- `docs/CHANGES.md`: what was added for the paper-ready release
+- `docs/PAPER_CHECKLIST.md`: remaining steps before arXiv submission
+
+## Academic context
+
+The underlying model packages were developed for the Artificial Intelligence course at the University of Eastern Finland (2025). This release reorganizes those materials into a reproducible comparison suitable for a technical report or preprint.
+
+## Citation
+
+If you use this repository, cite the GitHub URL and the course year. Update the citation block after the preprint is posted on arXiv.
