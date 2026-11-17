@@ -60,6 +60,15 @@ docs/               Protocol and method notes
 results/            Generated tables after a run
 ```
 
+## Paper draft (arXiv)
+
+| File | Role |
+|---|---|
+| `paper/MANUSCRIPT.md` | Full draft with filled Table 5 |
+| `paper/references.bib` | Bibliography (40+ entries) |
+| `paper/RELATED_WORK_OUTLINE.md` | Related Work map |
+| `paper/HOW_TO_PUBLISH.md` | arXiv upload checklist |
+
 ## Documentation
 
 - `docs/STRONG_PROTOCOL.md` — paper evaluation settings

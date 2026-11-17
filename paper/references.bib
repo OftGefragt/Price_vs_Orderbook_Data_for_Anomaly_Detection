@@ -1,0 +1,452 @@
+% Bibliography for L1 vs L2 crypto anomaly detection study.
+% Entries checked against publisher / arXiv / DBLP sources.
+% Grouped for Related Work drafting.
+
+% ---------- Surveys and foundations ----------
+@article{chandola2009anomaly,
+  title   = {Anomaly Detection: A Survey},
+  author  = {Chandola, Varun and Banerjee, Arindam and Kumar, Vipin},
+  journal = {ACM Computing Surveys},
+  volume  = {41},
+  number  = {3},
+  pages   = {1--58},
+  year    = {2009},
+  doi     = {10.1145/1541880.1541882}
+}
+
+@book{aggarwal2017outlier,
+  title     = {Outlier Analysis},
+  author    = {Aggarwal, Charu C.},
+  year      = {2017},
+  edition   = {2},
+  publisher = {Springer},
+  doi       = {10.1007/978-3-319-47578-3}
+}
+
+@article{ruff2021deep,
+  title   = {A Unifying Review of Deep and Shallow Anomaly Detection},
+  author  = {Ruff, Lukas and Kauffmann, Jacob R. and Vandermeulen, Robert A. and Montavon, Gr{\'e}goire and Samek, Wojciech and Kloft, Marius and Dietterich, Thomas G. and M{\"u}ller, Klaus-Robert},
+  journal = {Proceedings of the IEEE},
+  volume  = {109},
+  number  = {5},
+  pages   = {756--795},
+  year    = {2021},
+  doi     = {10.1109/JPROC.2021.3052449}
+}
+
+@article{pang2021deep,
+  title   = {Deep Learning for Anomaly Detection: A Review},
+  author  = {Pang, Guansong and Shen, Chunhua and Cao, Longbing and Hengel, Anton Van Den},
+  journal = {ACM Computing Surveys},
+  volume  = {54},
+  number  = {2},
+  pages   = {1--38},
+  year    = {2021},
+  doi     = {10.1145/3439950}
+}
+
+% ---------- Isolation / tree methods ----------
+@inproceedings{liu2008isolation,
+  title     = {Isolation Forest},
+  author    = {Liu, Fei Tony and Ting, Kai Ming and Zhou, Zhi-Hua},
+  booktitle = {Proceedings of the Eighth IEEE International Conference on Data Mining (ICDM)},
+  pages     = {413--422},
+  year      = {2008},
+  publisher = {IEEE},
+  doi       = {10.1109/ICDM.2008.17}
+}
+
+@article{hariri2021extended,
+  title   = {Extended Isolation Forest},
+  author  = {Hariri, Sahand and Carrasco Kind, Matias and Brunner, Robert J.},
+  journal = {IEEE Transactions on Knowledge and Data Engineering},
+  volume  = {33},
+  number  = {4},
+  pages   = {1479--1489},
+  year    = {2021},
+  doi     = {10.1109/TKDE.2019.2947676}
+}
+
+@article{breunig2000lof,
+  title   = {{LOF}: Identifying Density-Based Local Outliers},
+  author  = {Breunig, Markus M. and Kriegel, Hans-Peter and Ng, Raymond T. and Sander, J{\"o}rg},
+  journal = {ACM SIGMOD Record},
+  volume  = {29},
+  number  = {2},
+  pages   = {93--104},
+  year    = {2000},
+  doi     = {10.1145/335191.335388}
+}
+
+@inproceedings{scholkopf2001estimating,
+  title     = {Estimating the Support of a High-Dimensional Distribution},
+  author    = {Sch{\"o}lkopf, Bernhard and Platt, John C. and Shawe-Taylor, John and Smola, Alex J. and Williamson, Robert C.},
+  booktitle = {Neural Computation},
+  volume    = {13},
+  number    = {7},
+  pages     = {1443--1471},
+  year      = {2001},
+  doi       = {10.1162/089976601750264965}
+}
+
+@inproceedings{tax2004support,
+  title     = {Support Vector Data Description},
+  author    = {Tax, David M. J. and Duin, Robert P. W.},
+  booktitle = {Machine Learning},
+  volume    = {54},
+  number    = {1},
+  pages     = {45--66},
+  year      = {2004},
+  doi       = {10.1023/B:MACH.0000008084.60811.49}
+}
+
+% ---------- Deep / generative AD ----------
+@inproceedings{schlegl2017anogan,
+  title     = {Unsupervised Anomaly Detection with Generative Adversarial Networks to Guide Marker Discovery},
+  author    = {Schlegl, Thomas and Seeb{\"o}ck, Philipp and Waldstein, Sebastian M. and Schmidt-Erfurth, Ursula and Langs, Georg},
+  booktitle = {Information Processing in Medical Imaging (IPMI)},
+  series    = {LNCS},
+  volume    = {10265},
+  pages     = {146--157},
+  year      = {2017},
+  publisher = {Springer},
+  doi       = {10.1007/978-3-319-59050-9_12}
+}
+
+@article{schlegl2019fanogan,
+  title   = {{f-AnoGAN}: Fast Unsupervised Anomaly Detection with Generative Adversarial Networks},
+  author  = {Schlegl, Thomas and Seeb{\"o}ck, Philipp and Waldstein, Sebastian M. and Langs, Georg and Schmidt-Erfurth, Ursula},
+  journal = {Medical Image Analysis},
+  volume  = {54},
+  pages   = {30--44},
+  year    = {2019},
+  doi     = {10.1016/j.media.2019.01.010}
+}
+
+@inproceedings{ruff2018deep,
+  title     = {Deep One-Class Classification},
+  author    = {Ruff, Lukas and Vandermeulen, Robert and Goernitz, Nico and Deecke, Lucas and Siddiqui, Shoaib Ahmed and Binder, Alexander and M{\"u}ller, Emmanuel and Kloft, Marius},
+  booktitle = {Proceedings of the 35th International Conference on Machine Learning},
+  volume    = {80},
+  pages     = {4393--4402},
+  year      = {2018},
+  publisher = {PMLR}
+}
+
+@inproceedings{goodfellow2014gan,
+  title     = {Generative Adversarial Nets},
+  author    = {Goodfellow, Ian and Pouget-Abadie, Jean and Mirza, Mehdi and Xu, Bing and Warde-Farley, David and Ozair, Sherjil and Courville, Aaron and Bengio, Yoshua},
+  booktitle = {Advances in Neural Information Processing Systems},
+  volume    = {27},
+  year      = {2014}
+}
+
+@article{cho2014learning,
+  title   = {Learning Phrase Representations using {RNN} Encoder--Decoder for Statistical Machine Translation},
+  author  = {Cho, Kyunghyun and van Merri{\"e}nboer, Bart and Gulcehre, Caglar and Bahdanau, Dzmitry and Bougares, Fethi and Schwenk, Holger and Bengio, Yoshua},
+  journal = {arXiv preprint arXiv:1406.1078},
+  year    = {2014}
+}
+
+@inproceedings{zong2018deep,
+  title     = {Deep Autoencoding {Gaussian} Mixture Model for Unsupervised Anomaly Detection},
+  author    = {Zong, Bo and Song, Qi and Min, Martin Renqiang and Cheng, Wei and Lumezanu, Cristian and Cho, Daeki and Chen, Haifeng},
+  booktitle = {International Conference on Learning Representations},
+  year      = {2018}
+}
+
+@inproceedings{zhou2017anomaly,
+  title     = {Anomaly Detection with Robust Deep Autoencoders},
+  author    = {Zhou, Chong and Paffenroth, Randy C.},
+  booktitle = {Proceedings of the 23rd ACM SIGKDD International Conference on Knowledge Discovery and Data Mining},
+  pages     = {665--674},
+  year      = {2017},
+  doi       = {10.1145/3097983.3098052}
+}
+
+% ---------- Hyperparameter / evolutionary search ----------
+@book{eiben2015introduction,
+  title     = {Introduction to Evolutionary Computing},
+  author    = {Eiben, A. E. and Smith, James E.},
+  year      = {2015},
+  edition   = {2},
+  publisher = {Springer},
+  doi       = {10.1007/978-3-662-44874-8}
+}
+
+@article{bergstra2012random,
+  title   = {Random Search for Hyper-Parameter Optimization},
+  author  = {Bergstra, James and Bengio, Yoshua},
+  journal = {Journal of Machine Learning Research},
+  volume  = {13},
+  pages   = {281--305},
+  year    = {2012}
+}
+
+% ---------- Market microstructure / LOB ----------
+@article{gould2013limit,
+  title   = {Limit Order Books},
+  author  = {Gould, Martin D. and Porter, Mason A. and Williams, Stacy and McDonald, Mark and Fenn, Daniel J. and Howison, Sam D.},
+  journal = {Quantitative Finance},
+  volume  = {13},
+  number  = {11},
+  pages   = {1709--1742},
+  year    = {2013},
+  doi     = {10.1080/14697688.2013.803148}
+}
+
+@article{cont2014price,
+  title   = {Price Dynamics in a {Markovian} Limit Order Market},
+  author  = {Cont, Rama and de Larrard, Adrien},
+  journal = {SIAM Journal on Financial Mathematics},
+  volume  = {4},
+  number  = {1},
+  pages   = {1--25},
+  year    = {2013},
+  doi     = {10.1137/110856605}
+}
+
+@inproceedings{sirignano2019universal,
+  title     = {Universal Features of Price Formation in Financial Markets: Perspectives from Deep Learning},
+  author    = {Sirignano, Justin and Cont, Rama},
+  booktitle = {Quantitative Finance},
+  volume    = {19},
+  number    = {9},
+  pages     = {1449--1459},
+  year      = {2019},
+  doi       = {10.1080/14697688.2019.1633012}
+}
+
+@article{zhang2019deeplob,
+  title   = {{DeepLOB}: Deep Convolutional Neural Networks for Limit Order Books},
+  author  = {Zhang, Zihao and Zohren, Stefan and Roberts, Stephen},
+  journal = {IEEE Transactions on Signal Processing},
+  volume  = {67},
+  number  = {11},
+  pages   = {3001--3012},
+  year    = {2019},
+  doi     = {10.1109/TSP.2019.2907260}
+}
+
+@article{kercheval2015modelling,
+  title   = {Modelling High-Frequency Limit Order Book Dynamics with Support Vector Machines},
+  author  = {Kercheval, Alec N. and Zhang, Yuan},
+  journal = {Quantitative Finance},
+  volume  = {15},
+  number  = {8},
+  pages   = {1315--1329},
+  year    = {2015},
+  doi     = {10.1080/14697688.2015.1032546}
+}
+
+% ---------- Crypto manipulation / surveillance ----------
+@article{kamps2018to,
+  title   = {To the Moon: Defining and Detecting Cryptocurrency Pump-and-Dumps},
+  author  = {Kamps, Josh and Kleinberg, Bennett},
+  journal = {Crime Science},
+  volume  = {7},
+  number  = {1},
+  pages   = {1--18},
+  year    = {2018},
+  doi     = {10.1186/s40163-018-0093-5}
+}
+
+@inproceedings{xu2019anatomy,
+  title     = {The Anatomy of a Cryptocurrency {Pump-and-Dump} Scheme},
+  author    = {Xu, Jiahua and Livshits, Benjamin},
+  booktitle = {28th USENIX Security Symposium},
+  pages     = {1609--1625},
+  year      = {2019}
+}
+
+@article{la2023survey,
+  title   = {A Survey on Pump and Dump Detection in the Cryptocurrency Market Using Machine Learning},
+  author  = {La Morgia, Massimo and Mei, Alessandro and Sassi, Francesco and Stefa, Julinda},
+  journal = {Future Internet},
+  volume  = {15},
+  number  = {8},
+  pages   = {267},
+  year    = {2023},
+  doi     = {10.3390/fi15080267}
+}
+
+@article{victor2021detecting,
+  title   = {Detecting and Quantifying Wash Trading on Decentralized Cryptocurrency Exchanges},
+  author  = {Victor, Friedhelm and Weintraud, Andrea Marie},
+  journal = {Proceedings of the Web Conference 2021},
+  pages   = {23--32},
+  year    = {2021},
+  doi     = {10.1145/3442381.3449824}
+}
+
+@article{gandal2018price,
+  title   = {Price Manipulation in the {Bitcoin} Ecosystem},
+  author  = {Gandal, Neil and Hamrick, JT and Moore, Tyler and Oberman, Tali},
+  journal = {Journal of Monetary Economics},
+  volume  = {95},
+  pages   = {86--96},
+  year    = {2018},
+  doi     = {10.1016/j.jmoneco.2017.12.004}
+}
+
+@article{griffin2020bitcoin,
+  title   = {Is {Bitcoin} Really Untethered?},
+  author  = {Griffin, John M. and Shams, Amin},
+  journal = {The Journal of Finance},
+  volume  = {75},
+  number  = {4},
+  pages   = {1913--1964},
+  year    = {2020},
+  doi     = {10.1111/jofi.12903}
+}
+
+@article{arxiv2412pd,
+  title   = {Machine Learning-Based Detection of Pump-and-Dump Schemes in Real-Time},
+  author  = {{Anonymous / see arXiv}},
+  journal = {arXiv preprint arXiv:2412.18848},
+  year    = {2024},
+  note    = {Verify author list from the PDF before camera-ready citation}
+}
+
+@article{arxiv2507lob,
+  title   = {A Comparative Analysis of Statistical and Machine Learning Models for Outlier Detection in {Bitcoin} Limit Order Books},
+  author  = {{Anonymous / see arXiv}},
+  journal = {arXiv preprint arXiv:2507.14960},
+  year    = {2025},
+  note    = {Verify author list from the PDF before camera-ready citation}
+}
+
+% ---------- Evaluation / methodology ----------
+@article{davis2006relationship,
+  title   = {The Relationship Between Precision-Recall and {ROC} Curves},
+  author  = {Davis, Jesse and Goadrich, Mark},
+  journal = {Proceedings of the 23rd International Conference on Machine Learning},
+  pages   = {233--240},
+  year    = {2006},
+  doi     = {10.1145/1143844.1143874}
+}
+
+@inproceedings{saito2015precision,
+  title     = {The Precision-Recall Plot Is More Informative than the {ROC} Plot When Evaluating Binary Classifiers on Imbalanced Datasets},
+  author    = {Saito, Takaya and Rehmsmeier, Marc},
+  booktitle = {PLOS ONE},
+  volume    = {10},
+  number    = {3},
+  pages     = {e0118432},
+  year      = {2015},
+  doi       = {10.1371/journal.pone.0118432}
+}
+
+@article{hand2009measuring,
+  title   = {Measuring Classifier Performance: A Coherent Alternative to the Area Under the {ROC} Curve},
+  author  = {Hand, David J.},
+  journal = {Machine Learning},
+  volume  = {77},
+  number  = {1},
+  pages   = {103--123},
+  year    = {2009},
+  doi     = {10.1007/s10994-009-5119-5}
+}
+
+@article{pedregosa2011scikit,
+  title   = {Scikit-learn: Machine Learning in {Python}},
+  author  = {Pedregosa, Fabian and Varoquaux, Ga{\"e}l and Gramfort, Alexandre and Michel, Vincent and Thirion, Bertrand and Grisel, Olivier and Blondel, Mathieu and Prettenhofer, Peter and Weiss, Ron and Dubourg, Vincent and Vanderplas, Jake and Passos, Alexandre and Cournapeau, David and Brucher, Matthieu and Perrot, Matthieu and Duchesnay, {\'E}douard},
+  journal = {Journal of Machine Learning Research},
+  volume  = {12},
+  pages   = {2825--2830},
+  year    = {2011}
+}
+
+@inproceedings{paszke2019pytorch,
+  title     = {{PyTorch}: An Imperative Style, High-Performance Deep Learning Library},
+  author    = {Paszke, Adam and Gross, Sam and Massa, Francisco and Lerer, Adam and Bradbury, James and Chanan, Gregory and Killeen, Trevor and Lin, Zeming and Gimelshein, Natalia and Antiga, Luca and Desmaison, Alban and Kopf, Andreas and Yang, Edward and DeVito, Zachary and Raison, Martin and Tejani, Alykhan and Chilamkurthy, Sasank and Steiner, Benoit and Fang, Lu and Bai, Junjie and Chintala, Soumith},
+  booktitle = {Advances in Neural Information Processing Systems},
+  volume    = {32},
+  year      = {2019}
+}
+
+% ---------- Genetic algorithms for model selection ----------
+@article{holland1992adaptation,
+  title     = {Adaptation in Natural and Artificial Systems},
+  author    = {Holland, John H.},
+  year      = {1992},
+  publisher = {MIT Press},
+  note      = {Foundational GA reference}
+}
+
+@article{whitley1994genetic,
+  title   = {A Genetic Algorithm Tutorial},
+  author  = {Whitley, Darrell},
+  journal = {Statistics and Computing},
+  volume  = {4},
+  number  = {2},
+  pages   = {65--85},
+  year    = {1994},
+  doi     = {10.1007/BF00175354}
+}
+
+% ---------- Time series / RNN AD ----------
+@article{malhotra2015long,
+  title   = {Long Short Term Memory Networks for Anomaly Detection in Time Series},
+  author  = {Malhotra, Pankaj and Vig, Lovekesh and Shroff, Gautam and Agarwal, Puneet},
+  journal = {ESANN},
+  year    = {2015}
+}
+
+@inproceedings{hundman2018detecting,
+  title     = {Detecting Spacecraft Anomalies Using {LSTMs} and Nonparametric Dynamic Thresholding},
+  author    = {Hundman, Kyle and Constantinou, Valentino and Laporte, Christopher and Colwell, Ian and Soderstrom, Tom},
+  booktitle = {Proceedings of the 24th ACM SIGKDD International Conference on Knowledge Discovery and Data Mining},
+  pages     = {387--395},
+  year      = {2018},
+  doi       = {10.1145/3219819.3219845}
+}
+
+@article{audibert2020usad,
+  title   = {{USAD}: Unsupervised Anomaly Detection on Multivariate Time Series},
+  author  = {Audibert, Julien and Michiardi, Pietro and Guyard, Fr{\'e}d{\'e}ric and Marti, S{\'e}bastien and Zuluaga, Maria A.},
+  journal = {Proceedings of the 26th ACM SIGKDD Conference on Knowledge Discovery and Data Mining},
+  pages   = {3395--3404},
+  year    = {2020},
+  doi     = {10.1145/3394486.3403392}
+}
+
+% ---------- Finance ML context ----------
+@article{fischer2018deep,
+  title   = {Deep Learning with Long Short-Term Memory Networks for Financial Market Predictions},
+  author  = {Fischer, Thomas and Krauss, Christopher},
+  journal = {European Journal of Operational Research},
+  volume  = {270},
+  number  = {2},
+  pages   = {654--669},
+  year    = {2018},
+  doi     = {10.1016/j.ejor.2017.11.054}
+}
+
+@article{tsantekidis2017forecasting,
+  title   = {Forecasting Stock Prices from the Limit Order Book Using Convolutional Neural Networks},
+  author  = {Tsantekidis, Avraam and Passalis, Nikolaos and Tefas, Anastasios and Kanniainen, Juho and Gabbouj, Moncef and Iosifidis, Alexandros},
+  journal = {IEEE Conference on Business Informatics},
+  pages   = {7--12},
+  year    = {2017},
+  doi     = {10.1109/CBI.2017.23}
+}
+
+@article{cont2001empirical,
+  title   = {Empirical Properties of Asset Returns: Stylized Facts and Statistical Issues},
+  author  = {Cont, Rama},
+  journal = {Quantitative Finance},
+  volume  = {1},
+  number  = {2},
+  pages   = {223--236},
+  year    = {2001},
+  doi     = {10.1080/713665670}
+}
+
+@article{lamorgia2020pump,
+  title   = {Pump and Dumps in the Bitcoin Era: Real Time Detection of Cryptocurrency Market Manipulations},
+  author  = {La Morgia, Massimo and Mei, Alessandro and Sassi, Francesco and Stefa, Julinda},
+  journal = {International Conference on Computer Communications and Networks (ICCCN)},
+  year    = {2020},
+  doi     = {10.1109/ICCCN49398.2020.9209660}
+}
