@@ -1,30 +1,19 @@
-# Changes in the paper-ready release
+# Changes in the comparison suite
 
-This document lists what was added to the public repository for reproducible comparison. Existing Level-1 and Level-2 course packages were left in place.
+## Strong-protocol update
 
-## Added
+1. Added `--mode strong|fast` to `paper_eval.run_comparison`.
+2. Strong mode uses three seeds, longer deep-model epochs, a 30000-row
+   Level-1 train subsample, and the full ETH Level-1 test set.
+3. Added weak proxy stress labels and Precision@k / Recall@k.
+4. Added pairwise Jaccard agreement tables per data level.
+5. Wrote `results/protocol.json` with the exact settings of each run.
+6. Extended Isolation Forest is used for moderate sample sizes. Larger
+   Level-1 matrices use sklearn IsolationForest with matched hyperparameters.
+7. Updated the Colab notebook to default to `MODE = "strong"`.
 
-1. `paper_eval/`
-   Unified data loading, three detectors, shared metrics, and `run_comparison.py`.
-2. `notebooks/L1_vs_L2_Comparison_Colab.ipynb`
-   End-to-end Colab workflow: clone, install, run, display Table 5, download CSV.
-3. `requirements-paper.txt`
-   Minimal dependency list for the comparison suite.
-4. `docs/`
-   Formal notes on data, methods, changes, and the paper checklist.
-5. `results/`
-   Destination folder for generated tables and score files.
-6. Root `README.md` rewrite
-   Clear instructions for Colab and local runs.
+## Earlier paper-ready release
 
-## Behavioural choices
-
-1. One feature matrix for Level 2 (thirty selected columns) for all unified detectors.
-2. Shared top-quantile flagging for fair rate control across models.
-3. Optional Level-1 row subsampling to keep Colab runtime manageable.
-4. Short deep-model epochs by default. Increase them for final reported numbers if compute allows.
-5. Automatic fallback from Extended Isolation Forest to sklearn IsolationForest when the local EIF code cannot be imported.
-
-## Not removed
-
-Pretrained weights, course READMEs, PCA and t-SNE figures, and the genetic-algorithm notebook outputs remain available for qualitative discussion in the paper.
+1. Added `paper_eval/` unified runners.
+2. Added Colab notebook and `requirements-paper.txt`.
+3. Kept original Level-1 and Level-2 course packages for qualitative figures.

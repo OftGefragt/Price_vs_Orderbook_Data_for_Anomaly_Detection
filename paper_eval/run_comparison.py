@@ -1,16 +1,24 @@
 """Train and score all model families on Level-1 and Level-2 data.
 
-Writes:
-  results/table5_main_comparison.csv
-  results/table5_main_comparison.md
-  results/scores_<model>_<level>.npz
+Modes:
+  fast   - subsampled Level-1, short epochs, one seed (smoke / Colab quick)
+  strong - full Level-1, longer epochs, multiple seeds (paper numbers)
+
+Writes under results/:
+  table5_main_comparison.csv          per-seed rows
+  table5_main_comparison_agg.csv      mean +/- std across seeds
+  table5_agreement_L1.csv / _L2.csv   pairwise Jaccard at 5%
+  protocol.json                       exact settings used
+  scores_*.npz
 """
 
 from __future__ import annotations
 
 import argparse
+import json
 import sys
 from pathlib import Path
+from typing import Dict, List, Tuple
 
 import numpy as np
 import pandas as pd
@@ -21,129 +29,272 @@ if str(REPO_ROOT) not in sys.path:
 
 from paper_eval.data import load_level1, load_level2, scale_fit_transform
 from paper_eval.metrics import (
+    aggregate_seed_rows,
     flag_top_quantile,
     markdown_table,
+    pairwise_jaccard_table,
     rows_to_table,
     summarize_run,
 )
 from paper_eval.models_anogan import FanoganDetector
 from paper_eval.models_eif import EIFSVMDetector
 from paper_eval.models_gru_svdd import GRUDeepSVDDDetector
+from paper_eval.proxy_labels import (
+    level1_stress_flags,
+    level2_stress_flags,
+    precision_recall_at_k,
+)
 
 
-def _subsample(x: np.ndarray, max_rows: int, seed: int = 42) -> np.ndarray:
-    if len(x) <= max_rows:
+MODES = {
+    "fast": {
+        "max_l1_train": 12000,
+        "max_l1_test": 8000,
+        "epochs_gan": 3,
+        "epochs_enc": 3,
+        "epochs_gru": 3,
+        "seeds": [42],
+        "use_full_l1": False,
+    },
+    "strong": {
+        # Full ETH test set; BTC train capped for deep-model wall time.
+        # Cap and epochs are recorded in results/protocol.json.
+        "max_l1_train": 30000,
+        "max_l1_test": None,
+        "epochs_gan": 10,
+        "epochs_enc": 15,
+        "epochs_gru": 8,
+        "seeds": [42, 43, 44],
+        "use_full_l1": False,
+    },
+}
+
+
+def _subsample(x: np.ndarray, max_rows: int | None, seed: int = 42) -> np.ndarray:
+    if max_rows is None or len(x) <= max_rows:
         return x
     rng = np.random.default_rng(seed)
     idx = np.sort(rng.choice(len(x), size=max_rows, replace=False))
     return x[idx]
 
 
-def run(max_l1_train: int = 12000, max_l1_test: int = 8000, seed: int = 42) -> pd.DataFrame:
+def _eif_for_level(level: str, n_features: int, seed: int) -> EIFSVMDetector:
+    # Use GA best extension when feature dim allows; otherwise clamp.
+    preferred = 4 if level == "L1" else 26
+    ext = min(preferred, max(0, n_features - 1))
+    return EIFSVMDetector(extension_level=ext, random_state=seed)
+
+
+def run(
+    mode: str = "strong",
+    max_l1_train: int | None = None,
+    max_l1_test: int | None = None,
+    seeds: List[int] | None = None,
+) -> Tuple[pd.DataFrame, pd.DataFrame]:
+    if mode not in MODES:
+        raise ValueError(f"Unknown mode {mode}. Choose from {list(MODES)}.")
+    cfg = dict(MODES[mode])
+    if max_l1_train is not None:
+        cfg["max_l1_train"] = max_l1_train
+        cfg["use_full_l1"] = False
+    if max_l1_test is not None:
+        cfg["max_l1_test"] = max_l1_test
+        cfg["use_full_l1"] = False
+    if seeds is not None:
+        cfg["seeds"] = seeds
+
     out_dir = REPO_ROOT / "results"
     out_dir.mkdir(parents=True, exist_ok=True)
 
+    print(f"Mode: {mode}")
     print("Loading Level-1 data...")
     l1_train_df, l1_test_df = load_level1()
-    l1_train, l1_test, _ = scale_fit_transform(l1_train_df, l1_test_df)
-    l1_train = _subsample(l1_train, max_l1_train, seed=seed)
-    l1_test = _subsample(l1_test, max_l1_test, seed=seed + 1)
+    l1_train_full, l1_test_full, _ = scale_fit_transform(l1_train_df, l1_test_df)
 
     print("Loading Level-2 data...")
     l2_train_df, l2_test_df = load_level2()
     l2_train, l2_test, _ = scale_fit_transform(l2_train_df, l2_test_df)
 
-    jobs = [
-        ("f-AnoGAN", "L1", l1_train, l1_test, FanoganDetector(epochs_gan=3, epochs_enc=3, seed=seed)),
-        ("f-AnoGAN", "L2", l2_train, l2_test, FanoganDetector(epochs_gan=3, epochs_enc=3, seed=seed)),
-        (
-            "GA-EIF+SVM",
-            "L1",
-            l1_train,
-            l1_test,
-            EIFSVMDetector(extension_level=4, random_state=seed),
-        ),
-        (
-            "GA-EIF+SVM",
-            "L2",
-            l2_train,
-            l2_test,
-            EIFSVMDetector(extension_level=26, random_state=seed),
-        ),
-        (
-            "GRU-DeepSVDD",
-            "L1",
-            l1_train,
-            l1_test,
-            GRUDeepSVDDDetector(epochs=3, seed=seed),
-        ),
-        (
-            "GRU-DeepSVDD",
-            "L2",
-            l2_train,
-            l2_test,
-            GRUDeepSVDDDetector(epochs=3, seed=seed),
-        ),
-    ]
+    # Proxy stress labels on the (possibly full) scaled arrays before seed loops.
+    # Labels are recomputed after any Level-1 subsample inside the seed loop.
+    all_rows: List[dict] = []
+    # Keep last-seed flags for agreement tables.
+    last_flags: Dict[str, Dict[str, np.ndarray]] = {"L1": {}, "L2": {}}
 
-    rows = []
-    ref_flags = {}
+    protocol = {
+        "mode": mode,
+        "seeds": cfg["seeds"],
+        "epochs_gan": cfg["epochs_gan"],
+        "epochs_enc": cfg["epochs_enc"],
+        "epochs_gru": cfg["epochs_gru"],
+        "use_full_l1": cfg["use_full_l1"],
+        "max_l1_train": cfg["max_l1_train"],
+        "max_l1_test": cfg["max_l1_test"],
+        "l2_train_rows": int(len(l2_train)),
+        "l2_test_rows": int(len(l2_test)),
+        "proxy_label_quantile": 0.99,
+        "window": 30,
+    }
 
-    for model_name, level, x_tr, x_te, detector in jobs:
-        print(f"\n=== {model_name} | {level} ===")
-        detector.fit(x_tr)
-        scores, infer_s = detector.score(x_te)
-        score_path = out_dir / f"scores_{model_name.replace('+', '_').replace('-', '_').lower()}_{level.lower()}.npz"
-        pd.DataFrame({"score": scores}).to_csv(score_path, index=False)
-        print(f"Saved scores: {score_path} ({len(scores)} windows)")
+    for seed in cfg["seeds"]:
+        print(f"\n######## SEED {seed} ########")
+        l1_train = _subsample(l1_train_full, cfg["max_l1_train"], seed=seed)
+        l1_test = _subsample(l1_test_full, cfg["max_l1_test"], seed=seed + 1)
 
-        flags5 = flag_top_quantile(scores, 0.05)
-        if model_name == "f-AnoGAN":
-            ref_flags[level] = flags5
+        protocol["l1_train_rows"] = int(len(l1_train))
+        protocol["l1_test_rows"] = int(len(l1_test))
 
-        row = summarize_run(
-            model=model_name,
-            level=level,
-            scores=scores,
-            train_seconds=getattr(detector, "train_seconds", 0.0),
-            infer_seconds=infer_s,
-            reference_flags_5=ref_flags.get(level),
-        )
-        if hasattr(detector, "_backend"):
-            row["eif_backend"] = detector._backend
-        rows.append(row)
-        print(
-            f"flag@5%={row['flag_rate_5pct']:.4f}  "
-            f"flag@10%={row['flag_rate_10pct']:.4f}  "
-            f"train={row['train_seconds']:.1f}s  infer={row['infer_seconds']:.1f}s"
-        )
+        labels = {
+            "L1": level1_stress_flags(l1_test, window=30, q=0.99),
+            "L2": level2_stress_flags(l2_test, window=30, q=0.99),
+        }
 
-    table = rows_to_table(rows)
-    csv_path = out_dir / "table5_main_comparison.csv"
+        datasets = {
+            "L1": (l1_train, l1_test),
+            "L2": (l2_train, l2_test),
+        }
+
+        for level, (x_tr, x_te) in datasets.items():
+            jobs = [
+                (
+                    "f-AnoGAN",
+                    FanoganDetector(
+                        epochs_gan=cfg["epochs_gan"],
+                        epochs_enc=cfg["epochs_enc"],
+                        seed=seed,
+                    ),
+                ),
+                (
+                    "GA-EIF+SVM",
+                    _eif_for_level(level, x_tr.shape[1], seed),
+                ),
+                (
+                    "GRU-DeepSVDD",
+                    GRUDeepSVDDDetector(epochs=cfg["epochs_gru"], seed=seed),
+                ),
+            ]
+
+            for model_name, detector in jobs:
+                print(f"\n=== {model_name} | {level} | seed={seed} ===")
+                detector.fit(x_tr)
+                scores, infer_s = detector.score(x_te)
+
+                # Sequence models return window scores; EIF returns per-row scores.
+                # Align proxy labels accordingly.
+                if model_name == "GA-EIF+SVM":
+                    # Build window scores as max score inside each window for PR alignment.
+                    from paper_eval.data import sliding_windows
+
+                    # For EIF, score each row then aggregate to windows for fair PR.
+                    row_scores = scores
+                    win = sliding_windows(row_scores.reshape(-1, 1), window=30, step=1)[:, :, 0]
+                    window_scores = win.max(axis=1)
+                    pr_scores = window_scores
+                    rank_scores = row_scores
+                else:
+                    pr_scores = scores
+                    rank_scores = scores
+
+                lab = labels[level]
+                p5, r5, _ = precision_recall_at_k(pr_scores, lab, 0.05)
+                p10, r10, _ = precision_recall_at_k(pr_scores, lab, 0.10)
+
+                score_path = (
+                    out_dir
+                    / f"scores_{model_name.replace('+', '_').replace('-', '_').lower()}_{level.lower()}_seed{seed}.npz"
+                )
+                pd.DataFrame({"score": rank_scores}).to_csv(score_path, index=False)
+
+                backend = getattr(detector, "_backend", None)
+                row = summarize_run(
+                    model=model_name,
+                    level=level,
+                    scores=rank_scores if model_name == "GA-EIF+SVM" else pr_scores,
+                    train_seconds=getattr(detector, "train_seconds", 0.0),
+                    infer_seconds=infer_s,
+                    seed=seed,
+                    precision_5=p5,
+                    recall_5=r5,
+                    precision_10=p10,
+                    recall_10=r10,
+                    backend=backend,
+                )
+                # For agreement, always use window-level top-5% flags when possible.
+                agree_scores = pr_scores
+                last_flags[level][model_name] = flag_top_quantile(agree_scores, 0.05)
+                all_rows.append(row)
+                print(
+                    f"P@5={p5:.3f} R@5={r5:.3f}  "
+                    f"train={row['train_seconds']:.1f}s infer={row['infer_seconds']:.1f}s"
+                    + (f" backend={backend}" if backend else "")
+                )
+
+    per_seed = rows_to_table(all_rows)
+    agg = aggregate_seed_rows(all_rows)
+
+    per_seed_path = out_dir / "table5_main_comparison.csv"
+    agg_path = out_dir / "table5_main_comparison_agg.csv"
+    per_seed.to_csv(per_seed_path, index=False)
+    agg.to_csv(agg_path, index=False)
+
     md_path = out_dir / "table5_main_comparison.md"
-    table.to_csv(csv_path, index=False)
     md_path.write_text(
-        "# Table 5. Main comparison\n\n"
-        "Flag rates use a shared top-quantile rule on each model's anomaly scores "
-        "(top 5% and top 10%). Jaccard is computed against f-AnoGAN flags on the "
-        "same data level after length alignment.\n\n"
-        + markdown_table(table)
+        "# Table 5. Main comparison (aggregated across seeds)\n\n"
+        "Precision/Recall use weak proxy stress labels (top 1% amplitude windows). "
+        "Flag rates use a shared top-quantile rule on anomaly scores.\n\n"
+        + markdown_table(agg)
+        + "\n\n## Per-seed rows\n\n"
+        + markdown_table(per_seed)
         + "\n",
         encoding="utf-8",
     )
-    print(f"\nWrote {csv_path}")
+
+    for level, fmap in last_flags.items():
+        if not fmap:
+            continue
+        agree = pairwise_jaccard_table(fmap)
+        agree_path = out_dir / f"table5_agreement_{level}.csv"
+        agree.to_csv(agree_path)
+        print(f"Wrote {agree_path}")
+
+    protocol_path = out_dir / "protocol.json"
+    protocol_path.write_text(json.dumps(protocol, indent=2), encoding="utf-8")
+
+    print(f"\nWrote {per_seed_path}")
+    print(f"Wrote {agg_path}")
     print(f"Wrote {md_path}")
-    print(table.to_string(index=False))
-    return table
+    print(f"Wrote {protocol_path}")
+    print("\nAggregated table:")
+    print(agg.to_string(index=False))
+    return per_seed, agg
 
 
 def main():
     parser = argparse.ArgumentParser(description="Run L1 vs L2 paper comparison.")
-    parser.add_argument("--max-l1-train", type=int, default=12000)
-    parser.add_argument("--max-l1-test", type=int, default=8000)
-    parser.add_argument("--seed", type=int, default=42)
+    parser.add_argument(
+        "--mode",
+        choices=["fast", "strong"],
+        default="strong",
+        help="strong = full L1, longer epochs, 3 seeds; fast = Colab smoke settings",
+    )
+    parser.add_argument("--max-l1-train", type=int, default=None)
+    parser.add_argument("--max-l1-test", type=int, default=None)
+    parser.add_argument(
+        "--seeds",
+        type=str,
+        default=None,
+        help="Comma-separated seeds, e.g. 42,43,44",
+    )
     args = parser.parse_args()
-    run(max_l1_train=args.max_l1_train, max_l1_test=args.max_l1_test, seed=args.seed)
+    seeds = None
+    if args.seeds:
+        seeds = [int(s.strip()) for s in args.seeds.split(",") if s.strip()]
+    run(
+        mode=args.mode,
+        max_l1_train=args.max_l1_train,
+        max_l1_test=args.max_l1_test,
+        seeds=seeds,
+    )
 
 
 if __name__ == "__main__":
