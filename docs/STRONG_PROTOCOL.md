@@ -62,3 +62,15 @@ Fast debugging:
 ```bash
 python -m paper_eval.run_comparison --mode fast
 ```
+
+## Matched follow-up (recommended for the paper)
+
+The strong protocol still mixes 1-minute Level-1 bars with Level-2 snapshots and
+can use different forest backends. For the confound-controlled comparison see
+`docs/MATCHED_PROTOCOL.md` and:
+
+```bash
+python -m paper_eval.run_comparison --mode matched --regime 2021_spring
+python -m paper_eval.fetch_regime_ohlcv --regime 2022_bear
+python -m paper_eval.run_comparison --mode matched --regime 2022_bear --levels L1
+```

@@ -1,0 +1,11 @@
+{
+  "regime": "2022_bear",
+  "btc_rows": 17568,
+  "eth_rows": 4032,
+  "btc_start": "2022-05-01 00:00:00+00:00",
+  "btc_end": "2022-06-30 23:55:00+00:00",
+  "eth_start": "2022-06-10 00:00:00+00:00",
+  "eth_end": "2022-06-23 23:55:00+00:00",
+  "source": "https://data.binance.vision/",
+  "interval": "5m"
+}

@@ -1,6 +1,8 @@
 
 # Large per-window score dumps (tables and protocol are committed)
 results/scores_*.npz
+results/**/scores_*.npz
+results/*_run.log
 .venv/
 __pycache__/
 *.pyc

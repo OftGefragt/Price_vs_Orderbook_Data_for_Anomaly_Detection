@@ -44,10 +44,18 @@ python -m paper_eval.run_comparison --mode strong
 
 | Mode | Purpose |
 |---|---|
-| `strong` | Paper protocol: 3 seeds, longer epochs, large L1 train, full ETH test |
-| `fast` | Smoke test with shorter epochs and smaller L1 subsets |
+| `strong` | Exploratory protocol: 1-min L1, 3 seeds, longer epochs |
+| `matched` | Confound-controlled: L1 aggregated to 5-min, shared sklearn forest on L1 and L2 |
+| `fast` / `matched_fast` | Smoke tests with shorter epochs |
 
-Details: `docs/STRONG_PROTOCOL.md`
+```bash
+python -m paper_eval.run_comparison --mode matched --regime 2021_spring
+python -m paper_eval.fetch_regime_ohlcv --regime 2022_bear
+python -m paper_eval.run_comparison --mode matched --regime 2022_bear --levels L1
+```
+
+Details: `docs/STRONG_PROTOCOL.md`, `docs/MATCHED_PROTOCOL.md`  
+Matched tables: `results/matched_2021_spring/`, `results/matched_2022_bear/`
 
 ## Repository layout
 
@@ -64,14 +72,16 @@ results/            Generated tables after a run
 
 | File | Role |
 |---|---|
-| `paper/MANUSCRIPT.md` | Full draft with filled Table 5 |
+| `paper/RESEARCHGATE_MANUSCRIPT.md` | Author–year manuscript (preferred for ResearchGate) |
+| `paper/MANUSCRIPT.md` | BibTeX-keyed draft |
 | `paper/references.bib` | Bibliography (40+ entries) |
 | `paper/RELATED_WORK_OUTLINE.md` | Related Work map |
 | `paper/HOW_TO_PUBLISH.md` | arXiv upload checklist |
 
 ## Documentation
 
-- `docs/STRONG_PROTOCOL.md` — paper evaluation settings
+- `docs/MATCHED_PROTOCOL.md` — 5-min L1, shared forest, 2022 regime
+- `docs/STRONG_PROTOCOL.md` — exploratory strong settings
 - `docs/DATA_AND_PROTOCOL.md` — datasets and scoring rules
 - `docs/METHODS.md` — model summaries
 - `docs/PAPER_CHECKLIST.md` — steps after numbers exist

@@ -13,7 +13,7 @@ Email: (add your preferred contact email before upload)
 
 ## Abstract
 
-Unsupervised anomaly detectors are often trained on cryptocurrency price series, yet it is unclear whether richer Level-2 (L2) order-book features improve detection over Level-1 (L1) open-high-low-close-volume (OHLCV) inputs. This paper compares three detector families under one protocol: a one-dimensional f-AnoGAN-style model, an Extended Isolation Forest configuration selected by a genetic search and paired with a one-class SVM stage, and a GRU encoder trained with a Deep SVDD objective. Models are trained on Bitcoin and evaluated on Ethereum. Ranking quality is measured with Precision at k and Recall at k against weak proxy stress labels (extreme amplitude windows), together with cross-model agreement of top-quantile flags. Across three random seeds, L2 inputs raise Precision at 5% from about 0.18 on L1 to about 0.26 on L2 for f-AnoGAN and for the forest pipeline, with Recall at 5% reaching 1.0 on L2 for those two families. Pairwise Jaccard agreement among top-5% flags is also higher on L2 than on L1. Code, seeds, and protocol files are released. The study does not claim verified manipulation labels; proxy stress labels and sampling-rate differences remain important limitations.
+Unsupervised anomaly detectors are often trained on cryptocurrency price series, yet it is unclear whether richer Level-2 (L2) order-book features improve detection over Level-1 (L1) open-high-low-close-volume (OHLCV) inputs. This paper compares three detector families under one protocol: a one-dimensional f-AnoGAN-style model, an Extended Isolation Forest configuration selected by a genetic search and paired with a one-class SVM stage, and a GRU encoder trained with a Deep SVDD objective. Models are trained on Bitcoin and evaluated on Ethereum. Ranking quality is measured with Precision at k and Recall at k against weak proxy stress labels (extreme amplitude windows), together with cross-model agreement of top-quantile flags. Across three random seeds in the exploratory strong protocol, L2 inputs raise Precision at 5% from about 0.18 on L1 to about 0.26 on L2 for f-AnoGAN and for the forest pipeline, with Recall at 5% reaching 1.0 on L2 for those two families. A matched follow-up aggregates L1 to 5-minute bars and forces the same Isolation Forest backend on both tiers; the L2 Precision at 5% advantage remains (about 0.19–0.19 on L1 deep models versus 0.26 / 0.26 / 0.25 on L2). A second Level-1 window in the May–June 2022 bear market shows that deep L1 detectors still concentrate scores on extreme amplitude windows outside spring 2021. Code, seeds, and protocol files are released. The study does not claim verified manipulation labels; proxy stress labels remain an important limitation.
 
 **Keywords:** anomaly detection; cryptocurrency; limit order book; AnoGAN; isolation forest; Deep SVDD
 
@@ -27,9 +27,9 @@ A practical design choice is the input representation. Level-1 data summarize tr
 
 ### Contributions
 
-1. A matched Bitcoin-train / Ethereum-test comparison of L1 versus L2 inputs for three unsupervised families: f-AnoGAN-style scoring (Schlegl et al., 2017, 2019), GA-configured Extended Isolation Forest with a one-class SVM stage (Hariri et al., 2021; Liu et al., 2008), and GRU with Deep SVDD (Cho et al., 2014; Ruff et al., 2018).
-2. A shared top-quantile flagging rule plus Precision/Recall against weak proxy stress labels, with multi-seed aggregation.
-3. Public code, protocol metadata, and tables that reproduce the reported numbers.
+1. A Bitcoin-train / Ethereum-test comparison of L1 versus L2 inputs for three unsupervised families: f-AnoGAN-style scoring (Schlegl et al., 2017, 2019), GA-configured Extended Isolation Forest with a one-class SVM stage (Hariri et al., 2021; Liu et al., 2008), and GRU with Deep SVDD (Cho et al., 2014; Ruff et al., 2018).
+2. A confound-controlled matched protocol that aggregates L1 to 5-minute bars and uses one forest backend on both tiers, plus a Level-1 check on a 2022 bear window.
+3. A shared top-quantile flagging rule plus Precision/Recall against weak proxy stress labels, with multi-seed aggregation and released protocol metadata.
 
 ---
 
@@ -67,9 +67,13 @@ This paper focuses on that missing comparison: fixed detectors, fixed train/test
 | Train | BTC | 5 minute | 3,367 | 30 selected depth/notional statistics |
 | Test | ETH | 5 minute | 3,365 | same 30 features |
 
-L1 and L2 do not share identical timestamps or sampling rates. They are treated as two experimental tracks rather than as aligned panels.
+L1 and L2 do not share identical timestamps. In the exploratory strong protocol they also differ in bar size (1 minute versus 5 minutes). The matched protocol in Section 6.4 aggregates L1 to 5-minute OHLCV so that a window of length 30 covers a comparable clock span on both tracks. Panels are still not row-aligned; they remain two experimental tracks.
 
-### 3.3 Preprocessing
+### 3.3 Secondary regime (Level-1 only)
+
+A second Level-1 window uses Binance Vision 5-minute BTCUSDT and ETHUSDT klines for May–June 2022 (Luna-period stress). Training uses BTC from 2022-05-01 to 2022-06-30 (17,568 bars). Testing uses ETH from 2022-06-10 to 2022-06-23 (4,032 bars). Historical L2 order-book matrices for that window are not bundled, so the regime check is Level-1 only.
+
+### 3.4 Preprocessing
 
 A MinMax scaler is fit on the training split only. Sequence models use sliding windows of length 30 with step 1.
 
@@ -145,13 +149,32 @@ The forest detector joins the deep models on L2, while on L1 it barely overlaps 
 
 Mean train times on the strong run (CPU) were about 135 s for L1 f-AnoGAN, 27 s for L1 GRU-DeepSVDD, 21 s for L2 f-AnoGAN, and 8 s for L2 EIF. Inference was under two seconds per deep model on the reported test sizes.
 
+### 6.4 Matched protocol (5-minute L1, shared forest backend)
+
+To test whether the L2 gain was an artifact of bar size or of mixed forest implementations, L1 was aggregated to 5-minute OHLCV (17,568 BTC train bars; 3,745 ETH test bars) and both tiers used scikit-learn Isolation Forest with the same hyperparameters. Mean Precision/Recall at 5% over seeds 42–44:
+
+| Model | Level | P@5% | R@5% | Backend |
+|---|---|---:|---:|---|
+| f-AnoGAN | L1 | 0.194 | 0.923 | deep |
+| GRU-DeepSVDD | L1 | 0.190 | 0.906 | deep |
+| GA-EIF+SVM | L1 | 0.000 | 0.000 | sklearn IF |
+| f-AnoGAN | L2 | 0.263 | 1.000 | deep |
+| GA-EIF+SVM | L2 | 0.263 | 1.000 | sklearn IF |
+| GRU-DeepSVDD | L2 | 0.246 | 0.932 | deep |
+
+The L2 advantage remains after these controls. Top-5% Jaccard agreement stays higher on L2 (for example 0.420 for f-AnoGAN versus forest) than on L1 (0.091 for the same pair). The L1 forest still fails to rank proxy stress windows, which points to input richness rather than backend choice.
+
+### 6.5 2022 bear Level-1 check
+
+On May–June 2022 5-minute OHLCV, deep L1 detectors again recover extreme amplitude windows (f-AnoGAN P@5% = 0.205 with R@5% = 1.0; GRU-DeepSVDD P@5% = 0.158 with R@5% = 0.772). The L1 forest remains weak (P@5% = 0.015). This does not replace an L2 comparison for 2022, but it shows that the L1 deep ranking pattern is not unique to spring 2021.
+
 ---
 
 ## 7. Discussion
 
-The results support a cautious claim: under this protocol, order-book features help unsupervised detectors concentrate high scores on extreme multivariate or price-amplitude windows. The gain is visible both in Precision/Recall and in cross-model agreement.
+The results support a cautious claim: under this protocol, order-book features help unsupervised detectors concentrate high scores on extreme multivariate or price-amplitude windows. The gain is visible both in Precision/Recall and in cross-model agreement, and it survives bar-size matching and backend standardization.
 
-Two readings are compatible with the microstructure literature. First, L2 features carry imbalance and depth information that is only weakly present in OHLCV bars (Gould et al., 2013; Zhang et al., 2019). Second, L1 forests may fail when the feature space is small and stress is mostly a temporal pattern better captured by windowed deep models; on L2 the same isolation idea becomes useful again.
+Two readings are compatible with the microstructure literature. First, L2 features carry imbalance and depth information that is only weakly present in OHLCV bars (Gould et al., 2013; Zhang et al., 2019). Second, L1 forests may fail when the feature space is small and stress is mostly a temporal pattern better captured by windowed deep models; on L2 the same isolation idea becomes useful again even when the forest code path is identical.
 
 Proxy recall of 1.0 should not be read as perfect detection of fraud. The proxy definition already selects extreme windows, and a 5% score budget can cover that thin set when rankings are good.
 
@@ -160,17 +183,16 @@ Proxy recall of 1.0 should not be read as perfect detection of fraud. The proxy 
 ## 8. Limitations
 
 1. Proxy stress labels are not exchange-confirmed manipulation events (Kamps and Kleinberg, 2018; Xu and Livshits, 2019).
-2. L1 is 1-minute data; L2 is 5-minute data. Direct timestamp alignment is not claimed.
-3. Level-1 training uses 30,000 BTC rows rather than the full 87,821 for deep-model wall time.
-4. Large-n Level-1 forests use scikit-learn Isolation Forest rather than pure Extended Isolation Forest.
-5. The calendar window is concentrated in spring 2021.
-6. No external supervised baseline with social-channel pump labels is included in this version.
+2. L1 and L2 panels are not timestamp-aligned even after 5-minute aggregation.
+3. The exploratory strong protocol still mixes 1-minute L1 with 5-minute L2; prefer the matched table for the main claim.
+4. The 2022 regime check is Level-1 only until historical order-book archives for that window are added.
+5. No external supervised baseline with social-channel pump labels is included in this version.
 
 ---
 
 ## 9. Conclusion
 
-This paper compared Level-1 and Level-2 inputs for unsupervised cryptocurrency anomaly detection across three model families under a reproducible Bitcoin-to-Ethereum protocol. Order-book features improved proxy Precision at 5% and raised agreement among detectors. The accompanying repository provides code and tables. Future work should add labeled event studies, additional assets and periods, and classical baselines such as LOF and standard Isolation Forest on identical windows.
+This paper compared Level-1 and Level-2 inputs for unsupervised cryptocurrency anomaly detection across three model families under a reproducible Bitcoin-to-Ethereum protocol. Order-book features improved proxy Precision at 5% and raised agreement among detectors. The matched 5-minute protocol and a 2022 Level-1 regime check support the same direction of findings. The accompanying repository provides code and tables. Future work should add labeled event studies, L2 archives for additional regimes, and classical baselines such as LOF on identical windows.
 
 ---
 
@@ -179,11 +201,16 @@ This paper compared Level-1 and Level-2 inputs for unsupervised cryptocurrency a
 Source code and result tables:  
 https://github.com/OftGefragt/Price_vs_Orderbook_Data_for_Anomaly_Detection
 
-Reproduce the strong evaluation with:
+Reproduce the evaluations with:
 
 ```text
 python -m paper_eval.run_comparison --mode strong
+python -m paper_eval.run_comparison --mode matched --regime 2021_spring
+python -m paper_eval.fetch_regime_ohlcv --regime 2022_bear
+python -m paper_eval.run_comparison --mode matched --regime 2022_bear --levels L1
 ```
+
+See also `docs/MATCHED_PROTOCOL.md`.
 
 ---
 

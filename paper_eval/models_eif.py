@@ -1,9 +1,11 @@
 """GA-configured Extended Isolation Forest with optional one-class SVM refinement.
 
-Uses the repository EIF implementation for moderate sample sizes. For large
-Level-1 matrices, falls back to sklearn IsolationForest with the same tree
-count, subsample size, and contamination so runtime stays tractable. The
-chosen backend is recorded for the paper.
+Backends:
+  auto     - EIF when n <= LARGE_N_THRESHOLD, else sklearn IsolationForest
+  sklearn  - always sklearn IsolationForest (matched L1/L2 protocol)
+  eif      - always local Extended Isolation Forest (may be slow on large n)
+
+The chosen backend name is recorded for the paper.
 """
 
 from __future__ import annotations
@@ -11,7 +13,7 @@ from __future__ import annotations
 import sys
 import time
 from pathlib import Path
-from typing import Tuple
+from typing import Optional, Tuple
 
 import numpy as np
 from sklearn.ensemble import IsolationForest
@@ -48,13 +50,20 @@ class EIFSVMDetector:
         contamination: float = 0.062,
         random_state: int = 42,
         force_sklearn: bool = False,
+        backend: Optional[str] = None,
     ):
         self.ntrees = ntrees
         self.sample_size = sample_size
         self.extension_level = extension_level
         self.contamination = contamination
         self.random_state = random_state
-        self.force_sklearn = force_sklearn
+        # Prefer explicit backend; force_sklearn kept for backward compatibility.
+        if backend is None:
+            backend = "sklearn" if force_sklearn else "auto"
+        if backend not in {"auto", "sklearn", "eif"}:
+            raise ValueError(f"Unknown forest backend {backend!r}")
+        self.backend_policy = backend
+        self.force_sklearn = force_sklearn or backend == "sklearn"
         self._forest = None
         self._svm = OneClassSVM(
             kernel="rbf", gamma="scale", nu=max(contamination, 0.01)
@@ -66,7 +75,14 @@ class EIFSVMDetector:
         t0 = time.perf_counter()
         n = len(x_train)
         sample_size = min(self.sample_size, n)
-        use_sklearn = self.force_sklearn or n > LARGE_N_THRESHOLD
+
+        if self.backend_policy == "sklearn":
+            use_sklearn = True
+        elif self.backend_policy == "eif":
+            use_sklearn = False
+        else:
+            use_sklearn = n > LARGE_N_THRESHOLD
+
         iForest = None if use_sklearn else _try_load_eif()
 
         if iForest is not None:
@@ -89,9 +105,12 @@ class EIFSVMDetector:
             )
             self._forest.fit(x_train)
             eif_scores = -self._forest.score_samples(x_train)
-            self._backend = (
-                "sklearn_iforest_large_n" if n > LARGE_N_THRESHOLD else "sklearn_iforest"
-            )
+            if self.backend_policy == "sklearn":
+                self._backend = "sklearn_iforest"
+            elif n > LARGE_N_THRESHOLD:
+                self._backend = "sklearn_iforest_large_n"
+            else:
+                self._backend = "sklearn_iforest"
 
         self._svm.fit(eif_scores.reshape(-1, 1))
         self.train_seconds = time.perf_counter() - t0
