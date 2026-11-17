@@ -1,0 +1,20 @@
+{
+  "mode": "strong",
+  "seeds": [
+    42,
+    43,
+    44
+  ],
+  "epochs_gan": 10,
+  "epochs_enc": 15,
+  "epochs_gru": 8,
+  "use_full_l1": false,
+  "max_l1_train": 30000,
+  "max_l1_test": null,
+  "l2_train_rows": 3367,
+  "l2_test_rows": 3365,
+  "proxy_label_quantile": 0.99,
+  "window": 30,
+  "l1_train_rows": 30000,
+  "l1_test_rows": 18721
+}
