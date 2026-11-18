@@ -1,0 +1,7 @@
+level,gap,n_positive_windows,n_positive_events,mean_event_span_windows
+L1,15,37,2,18.5
+L1,30,37,2,18.5
+L1,60,37,1,68.0
+L2,15,33,1,33.0
+L2,30,33,1,33.0
+L2,60,33,1,33.0

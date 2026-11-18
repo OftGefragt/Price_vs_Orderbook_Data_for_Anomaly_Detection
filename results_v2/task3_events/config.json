@@ -1,0 +1,18 @@
+{
+  "task": 3,
+  "label": "primary_price_range from task2",
+  "gaps_tested": [
+    15,
+    30,
+    60
+  ],
+  "flag_frac": 0.05,
+  "bootstrap": {
+    "n_boot": 400,
+    "block_len": 30,
+    "seed": 42
+  },
+  "seeds": [
+    42
+  ]
+}
