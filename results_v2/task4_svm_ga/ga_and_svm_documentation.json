@@ -1,0 +1,18 @@
+{
+  "fitness_if_labels_provided": "F1 of thresholded EIF scores vs labels",
+  "fitness_in_recorded_notebook_run": "np.var(scores) (labels omitted)",
+  "recorded_call": "best_params = ga_eif(X, pop_size=10, generations=10)",
+  "recorded_champion": {
+    "ntrees": 235,
+    "sample_size": 1691,
+    "contamination": 0.062,
+    "exlevel": 26
+  },
+  "eth_test_labels_used": false,
+  "train_only_matrix_verified": false,
+  "reason_unverified": "X came from missing Colab file df_selection.csv",
+  "paper_eval_reruns_ga": false,
+  "recommendation": "Describe hyperparameters as fixed inherited constants from a label-free variance search on an unreproducible Colab matrix; do not claim a leakage-free audited GA unless re-run on BTC train only.",
+  "contamination_and_continuous_scores": "sklearn IsolationForest contamination does not change the ordering of score_samples; it affects the hard decision offset. Pure EIF ignores contamination for path-length scores. Therefore the tuned contamination value does not affect the paper's Precision/Recall/Jaccard under top-quantile flagging of continuous scores.",
+  "svm_paper_wording": "A one-class SVM was fit on one-dimensional training forest scores and invoked at inference, but its predictions were not used to rank test windows. Reported metrics use continuous forest anomaly scores only. Rename the detector to GA-EIF (or IF) for metric claims, or report the SVM as an unused post-processor."
+}

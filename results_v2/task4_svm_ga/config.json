@@ -1,0 +1,7 @@
+{
+  "task": 4,
+  "seeds": [
+    42
+  ],
+  "backend": "sklearn_iforest"
+}
