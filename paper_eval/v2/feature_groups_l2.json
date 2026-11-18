@@ -1,0 +1,18 @@
+{
+  "pre_registered": true,
+  "rule": "Name-based grouping from column strings; no test-set selection.",
+  "groups": {
+    "bids_distance": ["bids_distance_2", "bids_distance_3", "bids_distance_4", "bids_distance_5", "bids_distance_6", "bids_distance_7", "bids_distance_8", "bids_distance_9", "bids_distance_10", "bids_distance_11"],
+    "asks_distance": ["asks_distance_6", "asks_distance_7", "asks_distance_8", "asks_distance_11", "asks_distance_12", "asks_distance_13", "asks_distance_14"],
+    "bids_notional_flow": ["bids_notional_0", "bids_limit_notional_7", "bids_limit_notional_8", "bids_limit_notional_10", "bids_market_notional_7"],
+    "asks_notional_flow": ["asks_notional_0", "asks_limit_notional_3", "asks_limit_notional_7", "asks_limit_notional_11", "asks_limit_notional_13", "asks_limit_notional_14", "asks_market_notional_0", "asks_cancel_notional_13"]
+  },
+  "reduced_l2_top_of_book_rule": "Pre-registered: features whose level index is 0 or whose name contains notional_0 / market_notional_0 / distance with smallest available level numbers present in the 30-col subset: bids_notional_0, asks_notional_0, asks_market_notional_0, bids_distance_2, bids_distance_3.",
+  "reduced_l2_features": [
+    "bids_notional_0",
+    "asks_notional_0",
+    "asks_market_notional_0",
+    "bids_distance_2",
+    "bids_distance_3"
+  ]
+}

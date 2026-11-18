@@ -1,0 +1,13 @@
+{
+  "task": 7,
+  "seed": 42,
+  "reduced_l2_features": [
+    "bids_notional_0",
+    "asks_notional_0",
+    "asks_market_notional_0",
+    "bids_distance_2",
+    "bids_distance_3"
+  ],
+  "feature_groups_file": "paper_eval/v2/feature_groups_l2.json",
+  "detector": "sklearn IsolationForest"
+}

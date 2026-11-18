@@ -1,0 +1,28 @@
+{
+  "task": 6,
+  "deep_seeds": [
+    42,
+    43,
+    44
+  ],
+  "forest_seeds": [
+    42,
+    43,
+    44,
+    45,
+    46,
+    47,
+    48,
+    49,
+    50,
+    51
+  ],
+  "l1_forest_features": "scale_free",
+  "budgets": [
+    0.01,
+    0.05,
+    0.1,
+    0.2
+  ],
+  "incomplete": "f-AnoGAN/GRU not re-run for seeds 45-51"
+}
