@@ -125,17 +125,41 @@ Artifacts: `results_v2/task5_ood_splits/`
 
 ---
 
+## Task 6 — Agreement (partial)
+
+- Deep pairwise Jaccard/Spearman: seeds **42–44** only (matched dumps).  
+- Forest seed-stability: seeds **42–51**.  
+- Chance Jaccard \(p/(2-p)\) included.  
+- **Incomplete:** f-AnoGAN/GRU not re-trained for seeds 45–51.
+
+## Task 7 — Matched controls (forest probe)
+
+Under primary price labels, IsolationForest P@5 lift:
+
+| Control | Lift |
+|---|---:|
+| L1 raw 5-min | 0 |
+| L1 scale-free | **19.98** |
+| L2 full 30 | **19.98** |
+| L2 reduced 5 (pre-registered) | **19.98** |
+| L1 scale-free subsampled to L2 n | **19.98** |
+
+**Plain finding:** once L1 is scale-free, the L2−L1 lift gap **vanishes** for the forest. Reducing L2 to 5 features does not hurt.
+
+## Task 8 — Feature groups
+
+Distance-only groups recover full lift; notional-flow-only groups give lift 0. Leave-one-group-out still full lift if distances remain. Suggests **distance geometry**, not notionals, drives forest recovery of the single price-stress episode — still not proof of “deep book robustness.”
+
 ## Incomplete tasks
 
 | Task | Status | Why incomplete |
 |---|---|---|
-| 6 Proper Jaccard, 10 seeds | Not started | Heavy retrain; next |
-| 7 Matched controls combo | Not started | Needs scale-free + feature sets + full retrain |
-| 8 L2 feature-group ablation | Not started | Depends on 7 harness |
-| 9 Extra baselines LOF/IF/OCSVM | Not started | |
-| 10 Economic check | Not started | Needs volume/impact series |
-| Deep OOD retrain all detectors | Partial | Forest probe only in Task 5 |
-| Train-only GA re-run | Not done | Optional; hyperparameters treated as fixed |
+| 6 full 10-seed deep | Partial | Only 42–44 deep dumps |
+| 7 deep-model controls | Partial | Forest probe only |
+| 8 deep-model group ablation | Partial | Forest only |
+| 9 LOF / plain IF / OCSVM baselines | Not started | |
+| 10 Economic check of flags | Not started | |
+| Train-only GA re-run | Not done | Treated as fixed constants |
 
 ---
 
