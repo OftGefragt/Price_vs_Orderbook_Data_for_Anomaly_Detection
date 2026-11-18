@@ -1,0 +1,21 @@
+{
+  "task": 5,
+  "seeds": [
+    42
+  ],
+  "scale_free_features": [
+    "log_ret",
+    "hl_range",
+    "vol_z",
+    "ret_abs",
+    "oc_ret"
+  ],
+  "splits": [
+    "BTC->ETH",
+    "ETH->BTC",
+    "BTC time 70/30",
+    "ETH time 70/30"
+  ],
+  "detector_for_splits": "sklearn IsolationForest (continuous scores)",
+  "note": "Deep models not fully re-trained here; forest used as fast OOD/split probe."
+}
