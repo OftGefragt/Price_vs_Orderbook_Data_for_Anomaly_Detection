@@ -1,27 +1,38 @@
-# Comparison of Price and Order-Book Data for Anomaly Detection
+# Cross-Asset Transfer for Crypto Anomaly Detection (L1 vs L2)
 
-This repository compares Level-1 price/volume features with Level-2 order-book
-features for unsupervised anomaly detection in cryptocurrency markets. Three
-detector families are evaluated under one protocol:
+**Title:** *Cross-Asset Transfer for Crypto Anomaly Detection: Level-1 vs Level-2 Features under Deep and Classical Models*
 
-1. f-AnoGAN with one-dimensional convolutions
-2. Extended Isolation Forest settings from a genetic search, with a one-class SVM stage
-3. A GRU encoder trained with a Deep SVDD objective
-
-Models train on Bitcoin and score Ethereum.
+This repository studies **Bitcoin → Ethereum** unsupervised anomaly ranking with Level-1 OHLCV versus Level-2 order-book features, using deep (f-AnoGAN, GRU–Deep SVDD) and classical (Isolation Forest–family) models. Controlled methodology (`results_v2/`) shows that earlier L2 Precision@5% gains were largely **label prevalence and L1 scale artifacts**; after controls, **cross-asset transfer works without requiring L2**.
 
 ## Publish this preprint
 
-1. Open `paper/RESEARCHGATE_MANUSCRIPT.html` in a browser.
-2. Print → Save as PDF.
-3. Follow `paper/HOW_TO_PUBLISH.md` (ResearchGate first, arXiv optional).
-4. Main numbers: `results/matched_2021_spring/`.
+| File | Use |
+|---|---|
+| `paper/Kaya_CrossAsset_Anomaly_Detection.docx` | **Word manuscript (APA7)** — preferred upload |
+| `paper/RESEARCHGATE_MANUSCRIPT.md` | Author–year source |
+| `paper/RESEARCHGATE_MANUSCRIPT.html` | Browser → Print → PDF |
+| `paper/HOW_TO_PUBLISH.md` | ResearchGate / SSRN / arXiv steps |
+| `results_v2/REPORT.md` | Controlled methodology report |
+| `results_v2/scalefree_deep/` | Main scale-free deep GPU tables |
 
-Manuscript source: `paper/RESEARCHGATE_MANUSCRIPT.md`
+Regenerate Word/HTML after edits:
 
-## Reproduce paper-quality numbers
+```bash
+python paper/build_docx.py
+python paper/build_html.py
+```
 
-Matched protocol (recommended):
+## Headline findings (controlled)
+
+| Setup | Precision@5% (approx.) |
+|---|---:|
+| Exploratory L2 (legacy labels) | ~0.26 |
+| Deep L1 / L2 after exact top-1% + price labels | ~0.19–0.20 |
+| Raw L1 forest BTC→ETH | ~0.00 |
+| Scale-free L1 forest | ~0.20 |
+| Scale-free L1 f-AnoGAN vs L2 deep | 0.194 vs 0.198 |
+
+## Reproduce
 
 ```bash
 git clone https://github.com/OftGefragt/Price_vs_Orderbook_Data_for_Anomaly_Detection.git
@@ -29,71 +40,32 @@ cd Price_vs_Orderbook_Data_for_Anomaly_Detection
 python -m venv .venv
 source .venv/bin/activate
 pip install -r requirements-paper.txt
+
+# Exploratory matched baseline
 python -m paper_eval.run_comparison --mode matched --regime 2021_spring
+
+# Controlled Direction-2 CPU suite
+python -m paper_eval.v2.run_direction2_cpu
+
+# Scale-free deep (GPU recommended)
+python -m paper_eval.v2.run_scalefree_deep --mode full
 ```
 
-Colab: open `notebooks/L1_vs_L2_Comparison_Colab.ipynb` (set `MODE = "matched"` if available, else `"strong"`).
-
-### Outputs written by a strong run
-
-| File | Role |
-|---|---|
-| `results/table5_main_comparison.csv` | Per-seed metrics |
-| `results/table5_main_comparison_agg.csv` | Mean and std across seeds |
-| `results/table5_agreement_L1.csv` | Pairwise Jaccard of top-5% flags |
-| `results/table5_agreement_L2.csv` | Same for Level-2 |
-| `results/protocol.json` | Exact settings used |
-| `results/scores_*.npz` | Raw anomaly scores |
-
-## Modes
-
-| Mode | Purpose |
-|---|---|
-| `strong` | Exploratory protocol: 1-min L1, 3 seeds, longer epochs |
-| `matched` | Confound-controlled: L1 aggregated to 5-min, shared sklearn forest on L1 and L2 |
-| `fast` / `matched_fast` | Smoke tests with shorter epochs |
-
-```bash
-python -m paper_eval.run_comparison --mode matched --regime 2021_spring
-python -m paper_eval.fetch_regime_ohlcv --regime 2022_bear
-python -m paper_eval.run_comparison --mode matched --regime 2022_bear --levels L1
-```
-
-Details: `docs/STRONG_PROTOCOL.md`, `docs/MATCHED_PROTOCOL.md`  
-Matched tables: `results/matched_2021_spring/`, `results/matched_2022_bear/`
+Colab: `notebooks/Methodology_v2_Direction2_Colab.ipynb` — see `docs/DIRECTION2_COLAB.md`.
 
 ## Repository layout
 
 ```text
-Level 1 Analysis/   Original Level-1 course packages and figures
-Level 2 Analysis/   Original Level-2 course packages and figures
-paper_eval/         Unified comparison code
-notebooks/          Colab notebook
-docs/               Protocol and method notes
-results/            Generated tables after a run
+paper/              Manuscript (DOCX, MD, HTML, BibTeX)
+paper_eval/         Unified comparison + results_v2 methodology
+results/            Exploratory / matched baseline tables
+results_v2/         Controlled audits, scale-free deep, Tasks 1–10
+docs/               Protocols and audit notes
+Level 1 Analysis/   Original L1 course packages
+Level 2 Analysis/   Original L2 course packages
+notebooks/          Colab notebooks
 ```
-
-## Paper draft (arXiv)
-
-| File | Role |
-|---|---|
-| `paper/RESEARCHGATE_MANUSCRIPT.md` | Author–year manuscript (preferred for ResearchGate) |
-| `paper/MANUSCRIPT.md` | BibTeX-keyed draft |
-| `paper/references.bib` | Bibliography (40+ entries) |
-| `paper/RELATED_WORK_OUTLINE.md` | Related Work map |
-| `paper/HOW_TO_PUBLISH.md` | arXiv upload checklist |
-
-## Documentation
-
-- `docs/MATCHED_PROTOCOL.md` — 5-min L1, shared forest, 2022 regime
-- `docs/STRONG_PROTOCOL.md` — exploratory strong settings
-- `docs/DATA_AND_PROTOCOL.md` — datasets and scoring rules
-- `docs/METHODS.md` — model summaries
-- `docs/PAPER_CHECKLIST.md` — steps after numbers exist
-- `docs/CHANGES.md` — release notes for the comparison suite
 
 ## Academic context
 
-The model packages began as coursework at the University of Eastern Finland
-(Artificial Intelligence, 2025). This repository adds a unified comparison
-layer for a technical report or preprint.
+Model packages began as coursework at the University of Eastern Finland (Artificial Intelligence, 2025). This repository adds a unified comparison layer and a controlled cross-asset transfer analysis for preprint deposit. OftGefragt is the code host, not a co-author.

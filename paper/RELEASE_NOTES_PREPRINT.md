@@ -1,24 +1,27 @@
 # Preprint release notes (November 2026)
 
-## Claim to publish
+## Title
 
-Under a matched Bitcoin-train / Ethereum-test protocol with 5-minute Level-1 bars and a shared Isolation Forest backend, Level-2 order-book features raise proxy Precision at 5% relative to Level-1 OHLCV for f-AnoGAN, GA-EIF+SVM, and GRU-DeepSVDD.
+Cross-Asset Transfer for Crypto Anomaly Detection: Level-1 vs Level-2 Features under Deep and Classical Models
 
-## Main numbers (seeds 42–44)
+## Framing change (Direction 2)
 
-| Model | L1 P@5 | L2 P@5 |
-|---|---:|---:|
-| f-AnoGAN | 0.194 | 0.263 |
-| GA-EIF+SVM | 0.000 | 0.263 |
-| GRU-DeepSVDD | 0.190 | 0.246 |
+Earlier exploratory matched tables suggested L2 Precision@5% ≈ 0.26 versus L1 ≈ 0.19. Controlled methodology (`results_v2/`) shows that gain does not survive:
 
-## Intentionally out of scope for this version
+1. Exact top-1% prevalence equalization
+2. Non-circular price-range labels
+3. Scale-free L1 for classical detectors
+4. Scale-free deep GPU re-run (`results_v2/scalefree_deep/`)
 
-- Paid 2022 Level-2 order-book archives
-- Confirmed manipulation / pump labels
-- Journal camera-ready formatting
+**Publishable claim:** BTC→ETH unsupervised transfer works; L2 is optional once scale and labels are controlled.
 
-## Files for upload
+## Files for deposit
 
-1. `RESEARCHGATE_MANUSCRIPT.html` → PDF via browser print  
-2. Link: https://github.com/OftGefragt/Price_vs_Orderbook_Data_for_Anomaly_Detection  
+- `paper/Kaya_CrossAsset_Anomaly_Detection.docx`
+- `paper/RESEARCHGATE_MANUSCRIPT.md` / `.html`
+- `results_v2/REPORT.md`
+- `results_v2/scalefree_deep/`
+
+## Link
+
+https://github.com/OftGefragt/Price_vs_Orderbook_Data_for_Anomaly_Detection

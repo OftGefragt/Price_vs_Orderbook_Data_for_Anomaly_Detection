@@ -159,15 +159,35 @@ Distance-only groups recover full lift; notional-flow-only groups give lift 0. L
 | 8 deep-model group ablation | Partial | Forest only |
 | 9 LOF / plain IF / OCSVM baselines | Done (seed 42) | See `task9_baselines/` — raw L1 IF fails but LOF/OCSVM still recover ~0.17–0.18 P@5 |
 | 10 Economic check of flags | Done (seed 42) | See `task10_economic/` — flagged windows have higher realized vol / volume |
-| Scale-free deep AnoGAN/GRU | Pending Colab GPU | `python -m paper_eval.v2.run_scalefree_deep --mode full` |
+| Scale-free deep AnoGAN/GRU | **Done (Colab GPU)** | See section below + `scalefree_deep/` |
 | Train-only GA re-run | Not done | Treated as fixed constants |
 | Deep seeds 45–51 | Not done | Optional |
 
-## How to finish Direction 2
+---
 
-Local CPU: `python -m paper_eval.v2.run_direction2_cpu`  
-Colab GPU notebook: `notebooks/Methodology_v2_Direction2_Colab.ipynb`  
-Guide: `docs/DIRECTION2_COLAB.md`
+## Scale-free deep (Colab GPU, seeds 42–44)
+
+Primary price-range labels, exact top-1%. L1 uses scale-free features; L2 unchanged. Config: `results_v2/scalefree_deep/config.json`.
+
+| Track | Model | P@5 mean | P@5 std | Lift@5 |
+|---|---|---:|---:|---:|
+| L1 scale-free | f-AnoGAN | 0.194 | 0.005 | 19.4 |
+| L1 scale-free | GRU-DeepSVDD | 0.115 | 0.025 | 11.5 |
+| L2 | f-AnoGAN | 0.198 | 0.000 | 20.0 |
+| L2 | GRU-DeepSVDD | 0.198 | 0.000 | 20.0 |
+
+**Plain finding:** Under matched price labels, scale-free L1 f-AnoGAN ≈ L2 deep (~0.19 P@5). Scale-free L1 GRU remains weaker (~0.11). Supports Direction-2 soft claim: L2 is not clearly superior once prevalence/label artifacts and L1 scaling are controlled; forest recovery of L1 is mostly OOD/scale, not a deep-book free lunch.
+
+Artifacts: `results_v2/scalefree_deep/`
+
+---
+
+## Remaining (optional, not blocking preprint)
+
+1. Optional: Chris authorship contact if co-authorship is agreed  
+2. Optional: Tasks 6–8 deep extensions; GA train-only re-run; deep seeds 45–51  
+
+Manuscript (Direction-2 framing): `paper/Kaya_CrossAsset_Anomaly_Detection.docx`, `paper/RESEARCHGATE_MANUSCRIPT.md`
 
 ---
 

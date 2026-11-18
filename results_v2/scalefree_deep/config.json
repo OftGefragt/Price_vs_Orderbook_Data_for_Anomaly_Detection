@@ -1,0 +1,31 @@
+{
+  "mode": "full",
+  "seeds": [
+    42,
+    43,
+    44
+  ],
+  "epochs_gan": 10,
+  "epochs_enc": 15,
+  "epochs_gru": 8,
+  "label": "primary_price_range exact top 1%",
+  "l1_features": "scale_free",
+  "l1_label_meta": {
+    "n_windows": 3716,
+    "k_positives": 37,
+    "base_rate": 0.009956942949407965,
+    "target_rate": 0.01,
+    "cutoff_amplitude": 144.34000000000015,
+    "n_tied_at_cutoff_amp": 3,
+    "tie_break": "amplitude_desc_then_index_asc"
+  },
+  "l2_label_meta": {
+    "n_windows": 3336,
+    "k_positives": 33,
+    "base_rate": 0.009892086330935251,
+    "target_rate": 0.01,
+    "cutoff_amplitude": 161.75499999999965,
+    "n_tied_at_cutoff_amp": 1,
+    "tie_break": "amplitude_desc_then_index_asc"
+  }
+}

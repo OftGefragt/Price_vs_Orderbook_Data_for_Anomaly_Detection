@@ -1,4 +1,4 @@
-# Level-1 Price versus Level-2 Order-Book Features for Unsupervised Anomaly Detection in Cryptocurrency Markets
+# Cross-Asset Transfer for Crypto Anomaly Detection: Level-1 vs Level-2 Features under Deep and Classical Models
 
 **Author**  
 Melike Kaya  
@@ -14,25 +14,28 @@ Contact: via GitHub issues at the repository below (or replace with your email b
 
 ## Abstract
 
-Unsupervised anomaly detectors are often trained on cryptocurrency price series, yet it is unclear whether richer Level-2 (L2) order-book features improve detection over Level-1 (L1) open-high-low-close-volume (OHLCV) inputs. This paper compares three detector families under one protocol: a one-dimensional f-AnoGAN-style model, an Extended Isolation Forest configuration selected by a genetic search and paired with a one-class SVM stage, and a GRU encoder trained with a Deep SVDD objective. Models are trained on Bitcoin and evaluated on Ethereum. Ranking quality is measured with Precision at k and Recall at k against weak proxy stress labels (extreme amplitude windows), together with cross-model agreement of top-quantile flags.
+Unsupervised anomaly detectors for cryptocurrency markets are often trained on one asset and applied to another. This paper studies that **cross-asset transfer** setting (Bitcoin train → Ethereum test) and asks whether Level-2 (L2) order-book features are necessary for useful ranking of extreme price windows, relative to Level-1 (L1) OHLCV inputs, for both deep and classical detectors. We evaluate an f-AnoGAN-style convolutional model, a GRU encoder with a Deep SVDD objective, and Isolation Forest–family models (including a genetically configured forest pipeline). Ranking uses Precision@k and Recall@k against exact top-1% price-range proxy labels, with lift and event-level checks.
 
-The main claim uses a confound-controlled matched protocol: L1 bars are aggregated to 5 minutes and both tiers use the same scikit-learn Isolation Forest backend. Across three seeds, L2 raises Precision at 5% from about 0.19 on L1 deep models to 0.26 on L2 for f-AnoGAN and for the forest pipeline (GRU-DeepSVDD: 0.19 to 0.25). An exploratory 1-minute L1 run and a May–June 2022 Level-1 bear-market check support the same direction. Code, seeds, and protocol files are released. The study does not claim verified manipulation labels; proxy stress labels remain an important limitation.
+An exploratory matched protocol with unequal label prevalence suggested an L2 Precision@5% advantage (~0.26 vs ~0.19). After equalizing prevalence, switching to non-circular price-range labels, and correcting L1 absolute-price scale for classical models, that advantage largely disappears for deep detectors (~0.19–0.20 on both tracks). Raw L1 forests fail under BTC→ETH scale shift (Precision@5% ≈ 0), whereas deep L1 models transfer successfully; **scale-free L1 forests match L2 forests** (~0.20). Scale-free deep re-training on GPU confirms L1 f-AnoGAN ≈ L2 deep (~0.194 vs 0.198). We conclude that **cross-asset transfer is viable without L2 data** when scale is handled, and that earlier L2 gains were largely label and scale artifacts. Evidence is limited by few independent stress events (1–2) in the Ethereum window.
 
-**Keywords:** anomaly detection; cryptocurrency; limit order book; AnoGAN; isolation forest; Deep SVDD
+**Keywords:** anomaly detection; cryptocurrency; cross-asset transfer; distribution shift; limit order book; AnoGAN; isolation forest; Deep SVDD
 
 ---
 
 ## 1. Introduction
 
-Cryptocurrency markets are liquid, continuous, and frequently exposed to abrupt stress and alleged manipulation (Gandal et al., 2018; Griffin and Shams, 2020; Kamps and Kleinberg, 2018). Surveillance systems therefore need methods that flag unusual intervals without waiting for costly event labels (Chandola et al., 2009; La Morgia et al., 2023).
+Cryptocurrency markets are liquid, continuous, and frequently exposed to abrupt stress and alleged manipulation (Gandal et al., 2018; Griffin & Shams, 2020; Kamps & Kleinberg, 2018). Surveillance systems therefore need methods that flag unusual intervals without waiting for costly event labels (Chandola et al., 2009; La Morgia et al., 2023).
 
-A practical design choice is the input representation. Level-1 data summarize traded prices and volumes. Level-2 order-book data expose depth, imbalance, and cancel or limit flow (Gould et al., 2013; Zhang et al., 2019). Order-book features help in predictive microstructure tasks (Kercheval and Zhang, 2015; Tsantekidis et al., 2017; Sirignano and Cont, 2019), and recent pump-and-dump detectors sometimes include book pressure statistics (Bolz et al., 2025). It is less clear, under a single unsupervised protocol, whether L2 features improve anomaly ranking relative to L1 features across several modern detector families.
+Two design choices matter in practice. First, **representation**: Level-1 (L1) OHLCV bars summarize traded prices and volumes, whereas Level-2 (L2) order-book snapshots expose depth, imbalance, and notional flow (Gould et al., 2013; Zhang et al., 2019). Book features help predictive microstructure tasks (Kercheval & Zhang, 2015; Tsantekidis et al., 2017; Sirignano & Cont, 2019), but it is unclear whether they are required for unsupervised stress ranking. Second, **transfer**: models are often trained where data are abundant (e.g., Bitcoin) and applied to another asset (e.g., Ethereum). Absolute price levels, volatility regimes, and liquidity differ across assets (Cont, 2001), so classical detectors that rely on raw feature magnitudes can fail under shift even when deep models succeed.
+
+This paper reframes the L1-versus-L2 comparison around that transfer problem. We ask: under BTC→ETH unsupervised training, do deep and classical detectors need order-book depth, or can scale-aware L1 features already support cross-asset anomaly ranking?
 
 ### Contributions
 
-1. A Bitcoin-train / Ethereum-test comparison of L1 versus L2 inputs for three unsupervised families: f-AnoGAN-style scoring (Schlegl et al., 2017, 2019), GA-configured Extended Isolation Forest with a one-class SVM stage (Hariri et al., 2021; Liu et al., 2008), and GRU with Deep SVDD (Cho et al., 2014; Ruff et al., 2018).
-2. A confound-controlled matched protocol that aggregates L1 to 5-minute bars and uses one forest backend on both tiers, plus a Level-1 check on a 2022 bear window.
-3. A shared top-quantile flagging rule plus Precision/Recall against weak proxy stress labels, with multi-seed aggregation and released protocol metadata.
+1. A Bitcoin-train / Ethereum-test comparison of L1 versus L2 inputs for deep (f-AnoGAN-style; GRU–Deep SVDD) and classical (Isolation Forest–family) detectors (Schlegl et al., 2017, 2019; Cho et al., 2014; Ruff et al., 2018; Liu et al., 2008; Hariri et al., 2021).
+2. A confound-controlled evaluation: exact top-1% **price-range** labels, prevalence equalization, event merging, scale-free L1 probes, and scale-free deep re-training.
+3. A corrected interpretation of an earlier exploratory L2 Precision@5% gain (~0.26): after controls, deep L1 ≈ deep L2, and classical L1 recovers once features are scale-free—supporting **cross-asset transfer without requiring L2**.
+4. Public code, seeds, protocol metadata, and methodology tables (`results/` and `results_v2/`).
 
 ---
 
@@ -40,17 +43,17 @@ A practical design choice is the input representation. Level-1 data summarize tr
 
 ### 2.1 Unsupervised anomaly detection
 
-Classical surveys emphasize that labels are scarce and that evaluation is fragile under class imbalance (Chandola et al., 2009; Aggarwal, 2017). Isolation Forest isolates rare points with random partitions (Liu et al., 2008). Extended Isolation Forest replaces axis-aligned cuts with random hyperplanes and reduces score artifacts (Hariri et al., 2021). Density and support estimators such as LOF and one-class SVM remain common baselines (Breunig et al., 2000; Scholkopf et al., 2001; Tax and Duin, 2004).
+Labels are scarce and evaluation is fragile under class imbalance (Chandola et al., 2009; Aggarwal, 2017). Isolation Forest isolates rare points with random partitions (Liu et al., 2008); Extended Isolation Forest reduces axis-aligned score artifacts (Hariri et al., 2021). Density and support estimators such as LOF and one-class SVM remain common baselines (Breunig et al., 2000; Schölkopf et al., 2001; Tax & Duin, 2004).
 
-Deep methods are reviewed by Ruff et al. (2021) and Pang et al. (2021). Autoencoder and mixture hybrids score reconstruction or density in latent space (Zhou and Paffenroth, 2017; Zong et al., 2018). AnoGAN introduced GAN-based anomaly scoring through reconstruction and discriminator features (Schlegl et al., 2017); f-AnoGAN replaces slow latent search with a trained encoder (Schlegl et al., 2019). Deep SVDD learns a hypersphere of normal embeddings (Ruff et al., 2018). Sequence models extend these ideas to time series (Malhotra et al., 2015; Hundman et al., 2018; Audibert et al., 2020).
+Deep methods are reviewed by Ruff et al. (2021) and Pang et al. (2021). AnoGAN introduced GAN-based anomaly scoring (Schlegl et al., 2017); f-AnoGAN replaces slow latent search with a trained encoder (Schlegl et al., 2019). Deep SVDD learns a hypersphere of normal embeddings (Ruff et al., 2018). Sequence models extend these ideas to time series (Malhotra et al., 2015; Hundman et al., 2018; Audibert et al., 2020). Precision–recall summaries are preferred to ROC under imbalance (Davis & Goadrich, 2006; Saito & Rehmsmeier, 2015).
 
-### 2.2 Order books and crypto surveillance
+### 2.2 Order books, crypto surveillance, and shift
 
-Limit order books encode supply and demand beyond the last trade (Gould et al., 2013; Cont and de Larrard, 2013). Machine learning models use book snapshots for mid-price and return prediction (Kercheval and Zhang, 2015; Tsantekidis et al., 2017; Zhang et al., 2019). Cryptocurrency research documents manipulation and pump-and-dump organization (Gandal et al., 2018; Xu and Livshits, 2019; La Morgia et al., 2020, 2023). Many detectors still start from OHLCV or social signals (Kamps and Kleinberg, 2018). Work that mixes book features into early-warning scores suggests microstructure cues matter (Bolz et al., 2025; Letteri, 2025), but few studies isolate the L1 versus L2 representation effect inside the same unsupervised training recipe.
+Limit order books encode supply and demand beyond the last trade (Gould et al., 2013; Cont & de Larrard, 2013). Machine learning models use book snapshots for mid-price and return prediction (Kercheval & Zhang, 2015; Tsantekidis et al., 2017; Zhang et al., 2019). Cryptocurrency research documents manipulation and pump-and-dump organization (Gandal et al., 2018; Xu & Livshits, 2019; La Morgia et al., 2020, 2023). Many detectors still start from OHLCV or social signals (Kamps & Kleinberg, 2018). Recent work mixes book pressure into early-warning scores (Bolz et al., 2025; Letteri, 2025), but few studies isolate L1 versus L2 **under explicit cross-asset transfer** with label and scale controls.
 
 ### 2.3 Gap
 
-This paper focuses on that missing comparison: fixed detectors, fixed train/test assets, two input levels, and ranking metrics that do not require confirmed fraud labels.
+We focus on that gap: fixed detectors, BTC→ETH transfer, two input levels, deep versus classical models, and ranking metrics that do not require confirmed fraud labels—while diagnosing prevalence, circular labels, and absolute-price shift.
 
 ---
 
@@ -65,6 +68,8 @@ This paper focuses on that missing comparison: fixed detectors, fixed train/test
 
 The underlying 1-minute series covers spring 2021 (BTC train about 2021-03-31 to 2021-05-31; ETH test about 2021-04-06 to 2021-04-19).
 
+**Scale-free L1 variant.** For classical and controlled deep runs, absolute OHLCV levels are replaced by returns / relative transforms so BTC and ETH share a comparable numeric regime (details in `results_v2/task5_ood_splits/` and `results_v2/scalefree_deep/`).
+
 ### 3.2 Level 2
 
 | Split | Asset | Resolution | Rows | Features |
@@ -76,11 +81,11 @@ L1 and L2 do not share identical timestamps. After 5-minute aggregation, a windo
 
 ### 3.3 Secondary regime (Level-1 only)
 
-A second Level-1 window uses Binance Vision 5-minute BTCUSDT and ETHUSDT klines for May–June 2022 (Luna-period stress). Training uses BTC from 2022-05-01 to 2022-06-30 (17,568 bars). Testing uses ETH from 2022-06-10 to 2022-06-23 (4,032 bars). Historical L2 order-book matrices for that window are not bundled, so the regime check is Level-1 only.
+A second Level-1 window uses Binance Vision 5-minute BTCUSDT and ETHUSDT klines for May–June 2022 (Luna-period stress). Training uses BTC from 2022-05-01 to 2022-06-30; testing uses ETH from 2022-06-10 to 2022-06-23. Historical L2 order-book matrices for that window are not bundled, so the regime check is Level-1 only.
 
 ### 3.4 Preprocessing
 
-A MinMax scaler is fit on the training split only. Sequence models use sliding windows of length 30 with step 1.
+A MinMax scaler is fit on the training split only (track-specific). Sequence models use sliding windows of length 30 with step 1.
 
 ---
 
@@ -94,100 +99,114 @@ Following the f-AnoGAN idea of an encoder plus generator and discriminator (Schl
 s = 1.0\cdot \ell_{\mathrm{rec}} + 0.1\cdot \ell_{\mathrm{feat}},
 \]
 
-where \(\ell_{\mathrm{rec}}\) is reconstruction error and \(\ell_{\mathrm{feat}}\) is a discriminator feature residual. Epochs: 10 (GAN) + 15 (encoder).
+where \(\ell_{\mathrm{rec}}\) is reconstruction error and \(\ell_{\mathrm{feat}}\) is a discriminator feature residual. Epochs in the main deep runs: 10 (GAN) + 15 (encoder).
 
-### 4.2 GA-configured forest with one-class SVM
+### 4.2 Classical forest pipeline
 
-Hyperparameters follow a genetic search recorded in the project notebook: 235 trees, subsample size 1691, contamination 0.062, extension level 26 when dimensionality allows (level 4 on L1). The search follows standard evolutionary model selection practice (Holland, 1992; Eiben and Smith, 2015). Continuous forest scores are used for ranking. In the matched protocol, both L1 and L2 use scikit-learn Isolation Forest with those tree and subsample settings (Liu et al., 2008; Pedregosa et al., 2011). An exploratory run also compares pure Extended Isolation Forest on L2 when sample size is small (Hariri et al., 2021). The backend name is logged.
+Hyperparameters follow a genetic search recorded in the project notebook: 235 trees, subsample size 1691, contamination 0.062 (Holland, 1992; Eiben & Smith, 2015). Continuous forest scores are used for ranking. A one-class SVM stage exists in the pipeline but **does not determine ranking** in the released metric path; claims refer to Isolation Forest / Extended Isolation Forest scores (Liu et al., 2008; Hariri et al., 2021; Pedregosa et al., 2011). Additional classical baselines (LOF, plain IF, one-class SVM) are reported in `results_v2/task9_baselines/`.
 
 ### 4.3 GRU encoder with Deep SVDD loss
 
-A two-layer GRU (Cho et al., 2014) maps each window to an embedding. Training minimizes distance to a hypersphere center updated toward the batch mean, in the spirit of Deep SVDD (Ruff et al., 2018). Epochs: 8.
+A two-layer GRU (Cho et al., 2014) maps each window to an embedding. Training minimizes distance to a hypersphere center updated toward the batch mean, in the spirit of Deep SVDD (Ruff et al., 2018). Epochs: 8 in the reported deep runs.
 
 ---
 
 ## 5. Experimental Setup
 
-| Item | Matched protocol (main) |
+| Item | Setting |
 |---|---|
-| Seeds | 42, 43, 44 |
+| Seeds | 42, 43, 44 (deep); forest probes extend further where noted |
 | Train asset | BTC |
 | Test asset | ETH |
-| L1 bar | 5-minute aggregate |
-| Forest backend | sklearn IsolationForest on L1 and L2 |
+| Transfer | Models are **not** fine-tuned on ETH |
+| L1 bar | 5-minute aggregate (matched) |
 | Flag rule | top 5% and top 10% scores |
-| Proxy labels | top 1% amplitude windows (Close range on L1; feature-norm range on L2) |
+| Primary labels | exact top 1% **price-range** windows (L1 Close; L2 midpoint), deterministic tie-break |
+| Legacy labels | inclusive quantile / L2 feature-norm amplitude (exploratory only) |
+| Metrics | Precision@k, Recall@k, lift = precision / base rate; event merge gap = 30 |
 | Implementation | PyTorch and scikit-learn (Paszke et al., 2019; Pedregosa et al., 2011) |
 
-**Precision at k (P@k)** is the fraction of the top-\(k\) highest-scoring windows that fall in the proxy stress set. **Recall at k (R@k)** is the fraction of all proxy stress windows recovered inside that top-\(k\) budget. Here \(k\) is 5% or 10% of scored windows. These summaries are preferred over ROC under imbalance (Davis and Goadrich, 2006; Saito and Rehmsmeier, 2015). Exact counts are stored in the released `protocol.json` files.
+**Precision at k (P@k)** is the fraction of the top-\(k\) highest-scoring windows that fall in the proxy stress set. **Recall at k (R@k)** is the fraction of all proxy stress windows recovered inside that top-\(k\) budget. Here \(k\) is 5% or 10% of scored windows.
+
+Methodology audits, prevalence tables, and controls live under `results_v2/` (Tasks 1–10 and `scalefree_deep/`). Exploratory baseline tables remain frozen in `results/baseline_v1/` and `results/matched_2021_spring/`.
 
 ---
 
 ## 6. Results
 
-### 6.1 Main comparison: matched protocol (Table 1)
+### 6.1 Exploratory matched protocol (legacy labels)
 
-Mean Precision/Recall at 5% over three seeds (`results/matched_2021_spring/`):
+Mean Precision/Recall at 5% over three seeds under the original matched protocol (`results/matched_2021_spring/`), which used inclusive quantile labels and L2 feature-norm amplitudes:
 
-| Model | Level | P@5% | R@5% | Backend |
-|---|---|---:|---:|---|
-| f-AnoGAN | L1 | 0.194 | 0.923 | deep |
-| GRU-DeepSVDD | L1 | 0.190 | 0.906 | deep |
-| GA-EIF+SVM | L1 | 0.000 | 0.000 | sklearn IF |
-| f-AnoGAN | L2 | 0.263 | 1.000 | deep |
-| GA-EIF+SVM | L2 | 0.263 | 1.000 | sklearn IF |
-| GRU-DeepSVDD | L2 | 0.246 | 0.932 | deep |
+| Model | Level | P@5% | R@5% |
+|---|---|---:|---:|
+| f-AnoGAN | L1 | 0.194 | 0.923 |
+| GRU-DeepSVDD | L1 | 0.190 | 0.906 |
+| GA-EIF+SVM (forest scores) | L1 | 0.000 | 0.000 |
+| f-AnoGAN | L2 | 0.263 | 1.000 |
+| GA-EIF+SVM (forest scores) | L2 | 0.263 | 1.000 |
+| GRU-DeepSVDD | L2 | 0.246 | 0.932 |
 
-After bar-size matching and backend standardization, L2 still improves Precision at 5% by about seven percentage points for f-AnoGAN (0.194 to 0.263) and moves the forest pipeline from failure on L1 to parity with f-AnoGAN on L2.
+This table suggested a clear L2 advantage. The remainder of Section 6 shows why that reading does not survive label and scale controls.
 
-### 6.2 Agreement of top-5% flags (matched)
+### 6.2 Prevalence and label controls
 
-Jaccard overlap remains higher on L2 than on L1:
+L2 inclusive-quantile labels overstated the positive share (~1.32% vs ~1.0%) because of ties at the cutoff. With **exact top-1%** labels, L2 deep/forest Precision@5% falls from ~0.263 to ~0.198 (near the maximum achievable precision at a 5% flag budget). Under **primary price-range** labels (non-circular for L2), deep models show **no meaningful L1–L2 precision gap** (seed-42 P@5 ≈ 0.19 on both tracks; see `results_v2/task1_label_prevalence/` and `task2_common_labels/`).
 
-| Pair | L1 Jaccard | L2 Jaccard |
-|---|---:|---:|
-| f-AnoGAN vs GRU-DeepSVDD | 0.409 | 0.446 |
-| f-AnoGAN vs GA-EIF+SVM | 0.091 | 0.420 |
-| GRU-DeepSVDD vs GA-EIF+SVM | 0.091 | 0.326 |
+### 6.3 Cross-asset scale shift: deep versus classical on L1
 
-The forest detector joins the deep models on L2, while on L1 it barely overlaps them. That pattern matches the Precision/Recall gap and is not explained by a different forest implementation.
+Under primary-style price labels, forest Precision@5% on **raw** L1 BTC→ETH is **0.00**, with a large fraction of ETH rows looking out-of-distribution relative to BTC absolute levels (~0.81 mean OOD fraction). The same forest on **scale-free L1** reaches Precision@5% ≈ **0.20**, matching L2 forest lift (~20). Deep L1 models already succeed on raw L1 (~0.19), indicating greater robustness to absolute-price shift without hand-crafted normalization (`results_v2/task5_ood_splits/`, `task7_controls/`).
 
-### 6.3 Exploratory 1-minute L1 protocol
+### 6.4 Scale-free deep comparison (main controlled result)
 
-For completeness, an exploratory run used 1-minute L1 (30,000 BTC train subsample; full ETH test) with the auto forest backend. Mean P@5% was about 0.179 on L1 deep models versus 0.263 on L2 (forest: 0.007 on L1 vs 0.263 on L2 with pure EIF). Tables live in `results/table5_main_comparison_agg.csv`. Prefer Table 1 for the main claim.
+Colab GPU re-training (seeds 42–44; primary price-range labels; exact top 1%) compares scale-free L1 against L2:
 
-### 6.4 2022 bear Level-1 check
+| Track | Model | P@5 mean | P@5 std | Lift@5 |
+|---|---|---:|---:|---:|
+| L1 scale-free | f-AnoGAN | 0.194 | 0.005 | 19.4 |
+| L1 scale-free | GRU-DeepSVDD | 0.115 | 0.025 | 11.5 |
+| L2 | f-AnoGAN | 0.198 | 0.000 | 20.0 |
+| L2 | GRU-DeepSVDD | 0.198 | 0.000 | 20.0 |
 
-On May–June 2022 5-minute OHLCV, deep L1 detectors again recover extreme amplitude windows (f-AnoGAN P@5% = 0.205 with R@5% = 1.0; GRU-DeepSVDD P@5% = 0.158 with R@5% = 0.772). The L1 forest remains weak (P@5% = 0.015). This does not replace an L2 comparison for 2022, but it shows that the L1 deep ranking pattern is not unique to spring 2021.
+Source: `results_v2/scalefree_deep/`. **L1 scale-free f-AnoGAN ≈ L2 deep.** Scale-free L1 GRU remains weaker than L2 GRU in this run.
 
-### 6.5 Runtime
+### 6.5 Event-level caution
 
-On the matched run (CPU), mean train times were about 81 s for L1 f-AnoGAN, 14 s for L1 GRU-DeepSVDD, 20 s for L2 f-AnoGAN, and under 1 s for the shared forest backend. Inference was under one second per model on the reported test sizes.
+Merging overlapping positive windows (gap = 30) yields only **two** independent L1 events and **one** L2 event in the Ethereum test window (`results_v2/task3_events/`). Window-level recall near 1.0 largely means recovering that thin event set, not many distinct market episodes.
+
+### 6.6 Secondary checks
+
+On May–June 2022 5-minute OHLCV (L1 only), deep detectors again recover extreme amplitude windows after BTC→ETH transfer (exploratory matched numbers in `results/matched_2022_bear/`). Flagged windows also show higher realized volatility / volume in an economic sanity check (`results_v2/task10_economic/`). Distance-related L2 feature groups dominate notional-only groups in a forest ablation (`results_v2/task8_feature_groups/`), but that does not restore a claim of deep-book necessity under price labels.
 
 ---
 
 ## 7. Discussion
 
-The results support a cautious claim: under this protocol, order-book features help unsupervised detectors concentrate high scores on extreme multivariate or price-amplitude windows. The gain is visible both in Precision/Recall and in cross-model agreement, and it survives bar-size matching and backend standardization.
+The controlled results support a **cross-asset transfer** reading rather than an **L2 superiority** reading.
 
-Two readings are compatible with the microstructure literature. First, L2 features carry imbalance and depth information that is only weakly present in OHLCV bars (Gould et al., 2013; Zhang et al., 2019). Second, L1 forests may fail when the feature space is small and stress is mostly a temporal pattern better captured by windowed deep models; on L2 the same isolation idea becomes useful again even when the forest code path is identical.
+1. **Transfer without ETH training works** for ranking extreme price-range windows, for deep L1 models and for classical models once L1 is scale-free.
+2. **Deep models are more robust to raw cross-asset scale shift** on L1 than Isolation Forest on absolute OHLCV; the gap closes after scale-free transforms.
+3. **L2 is not clearly required** for this ranking task once prevalence and labels are equalized: deep L1 f-AnoGAN matches L2 deep Precision@5%.
+4. The exploratory ~0.26 L2 Precision@5% figure should not be used as evidence of book-feature value; it mixed higher L2 base rate (ties) with a circular L2 amplitude and a raw-L1 forest failure.
 
-Proxy recall of 1.0 should not be read as perfect detection of fraud. The proxy definition already selects extreme windows, and a 5% score budget can cover that thin set when rankings are good.
+These findings are compatible with microstructure work showing that books contain predictive information (Zhang et al., 2019; Sirignano & Cont, 2019), while clarifying that **for unsupervised BTC→ETH stress ranking under price-range proxies**, transferable L1 representations can suffice.
 
 ---
 
 ## 8. Limitations
 
-1. Proxy stress labels are not exchange-confirmed manipulation events (Kamps and Kleinberg, 2018; Xu and Livshits, 2019).
-2. L1 and L2 panels are not timestamp-aligned even after 5-minute aggregation.
-3. Historical Level-2 order-book archives for 2022 were not available without paid vendors, so the second regime is Level-1 only.
-4. No external supervised baseline with social-channel pump labels is included in this version.
+1. Proxy stress labels are not exchange-confirmed manipulation events (Kamps & Kleinberg, 2018; Xu & Livshits, 2019).
+2. L1 and L2 panels are not timestamp-aligned; comparisons are track-wise, not row-aligned.
+3. Independent stress events are very few (1–2) in the reported Ethereum window.
+4. Historical Level-2 archives for 2022 were not available without paid vendors; the second regime is Level-1 only.
+5. Deep multi-seed coverage is concentrated on seeds 42–44; some ablations are forest-only.
+6. The SVM stage in the forest pipeline is not used for metric ranking in the released path.
 
 ---
 
 ## 9. Conclusion
 
-This paper compared Level-1 and Level-2 inputs for unsupervised cryptocurrency anomaly detection across three model families under a reproducible Bitcoin-to-Ethereum protocol. Under a matched 5-minute protocol with a shared forest backend, order-book features improved proxy Precision at 5% and raised agreement among detectors. A 2022 Level-1 regime check supports the same direction for deep models on price data. The accompanying repository provides code and tables. Future work should add labeled event studies, L2 archives for additional regimes, and classical baselines such as LOF on identical windows.
+This paper compared Level-1 and Level-2 cryptocurrency representations for unsupervised anomaly detection under **cross-asset transfer** (Bitcoin → Ethereum), using both deep and classical models. After correcting label prevalence, adopting non-circular price-range labels, and controlling absolute-price scale, deep L1 and L2 rankings align (~0.19 Precision@5%), and scale-free L1 forests match L2 forests. Deep models transfer more gracefully on raw L1; classical models transfer once features are scale-aware. Order-book depth is therefore **optional, not necessary**, for this transfer-based ranking task. The repository releases code and controlled tables for reproduction and preprint deposit.
 
 ---
 
@@ -196,19 +215,20 @@ This paper compared Level-1 and Level-2 inputs for unsupervised cryptocurrency a
 Source code and result tables:  
 https://github.com/OftGefragt/Price_vs_Orderbook_Data_for_Anomaly_Detection
 
-Primary manuscript file in the repository: `paper/RESEARCHGATE_MANUSCRIPT.md`  
-Printable HTML: `paper/RESEARCHGATE_MANUSCRIPT.html`
+Primary manuscript: `paper/RESEARCHGATE_MANUSCRIPT.md`  
+Word manuscript (APA7): `paper/Kaya_CrossAsset_Anomaly_Detection.docx`  
+Printable HTML: `paper/RESEARCHGATE_MANUSCRIPT.html`  
+Controlled methodology report: `results_v2/REPORT.md`
 
-Reproduce the evaluations with:
+Reproduce key evaluations with:
 
 ```text
 python -m paper_eval.run_comparison --mode matched --regime 2021_spring
-python -m paper_eval.run_comparison --mode strong
-python -m paper_eval.fetch_regime_ohlcv --regime 2022_bear
-python -m paper_eval.run_comparison --mode matched --regime 2022_bear --levels L1
+python -m paper_eval.v2.run_direction2_cpu
+python -m paper_eval.v2.run_scalefree_deep --mode full
 ```
 
-See also `docs/MATCHED_PROTOCOL.md` and `paper/HOW_TO_PUBLISH.md`.
+See also `docs/DIRECTION2_COLAB.md` and `paper/HOW_TO_PUBLISH.md`.
 
 ---
 
@@ -220,82 +240,80 @@ Parts of the model packages began as coursework in the Artificial Intelligence c
 
 ## References
 
-Aggarwal, C. C. (2017). *Outlier Analysis* (2nd ed.). Springer.
+Aggarwal, C. C. (2017). *Outlier analysis* (2nd ed.). Springer. https://doi.org/10.1007/978-3-319-47578-3
 
-Audibert, J., Michiardi, P., Guyard, F., Marti, S., and Zuluaga, M. A. (2020). USAD: Unsupervised anomaly detection on multivariate time series. In *Proceedings of the 26th ACM SIGKDD Conference on Knowledge Discovery and Data Mining*, pages 3395-3404.
+Audibert, J., Michiardi, P., Guyard, F., Marti, S., & Zuluaga, M. A. (2020). USAD: Unsupervised anomaly detection on multivariate time series. In *Proceedings of the 26th ACM SIGKDD Conference on Knowledge Discovery and Data Mining* (pp. 3395–3404). https://doi.org/10.1145/3394486.3403392
 
-Bolz, M., Brundler, K., Kane, L., Patsias, P., Tessendorf, L., Gogol, K. M., Kim, T., and Tessone, C. J. (2025). Real-time machine learning detection of Telegram-based pump-and-dump schemes. In *Proceedings of the ACM CCS Workshop on Decentralized Finance and Security (DeFi'25)*. Also arXiv:2412.18848.
+Bolz, M., Bründler, K., Kane, L., Patsias, P., Tessendorf, L., Gogol, K. M., Kim, T., & Tessone, C. J. (2025). Real-time machine learning detection of Telegram-based pump-and-dump schemes. In *Proceedings of the ACM CCS Workshop on Decentralized Finance and Security (DeFi'25)*. https://arxiv.org/abs/2412.18848
 
-Breunig, M. M., Kriegel, H.-P., Ng, R. T., and Sander, J. (2000). LOF: Identifying density-based local outliers. *ACM SIGMOD Record*, 29(2), 93-104.
+Breunig, M. M., Kriegel, H.-P., Ng, R. T., & Sander, J. (2000). LOF: Identifying density-based local outliers. *ACM SIGMOD Record, 29*(2), 93–104. https://doi.org/10.1145/335191.335388
 
-Chandola, V., Banerjee, A., and Kumar, V. (2009). Anomaly detection: A survey. *ACM Computing Surveys*, 41(3), 1-58.
+Chandola, V., Banerjee, A., & Kumar, V. (2009). Anomaly detection: A survey. *ACM Computing Surveys, 41*(3), 1–58. https://doi.org/10.1145/1541880.1541882
 
-Cho, K., van Merrienboer, B., Gulcehre, C., Bahdanau, D., Bougares, F., Schwenk, H., and Bengio, Y. (2014). Learning phrase representations using RNN encoder-decoder for statistical machine translation. arXiv:1406.1078.
+Cho, K., van Merriënboer, B., Gulcehre, C., Bahdanau, D., Bougares, F., Schwenk, H., & Bengio, Y. (2014). *Learning phrase representations using RNN encoder–decoder for statistical machine translation*. arXiv. https://arxiv.org/abs/1406.1078
 
-Cont, R. (2001). Empirical properties of asset returns: Stylized facts and statistical issues. *Quantitative Finance*, 1(2), 223-236.
+Cont, R. (2001). Empirical properties of asset returns: Stylized facts and statistical issues. *Quantitative Finance, 1*(2), 223–236. https://doi.org/10.1080/713665670
 
-Cont, R., and de Larrard, A. (2013). Price dynamics in a Markovian limit order market. *SIAM Journal on Financial Mathematics*, 4(1), 1-25.
+Cont, R., & de Larrard, A. (2013). Price dynamics in a Markovian limit order market. *SIAM Journal on Financial Mathematics, 4*(1), 1–25. https://doi.org/10.1137/110856605
 
-Davis, J., and Goadrich, M. (2006). The relationship between Precision-Recall and ROC curves. In *Proceedings of the 23rd International Conference on Machine Learning*, pages 233-240.
+Davis, J., & Goadrich, M. (2006). The relationship between Precision-Recall and ROC curves. In *Proceedings of the 23rd International Conference on Machine Learning* (pp. 233–240). https://doi.org/10.1145/1143844.1143874
 
-Eiben, A. E., and Smith, J. E. (2015). *Introduction to Evolutionary Computing* (2nd ed.). Springer.
+Eiben, A. E., & Smith, J. E. (2015). *Introduction to evolutionary computing* (2nd ed.). Springer. https://doi.org/10.1007/978-3-662-44874-8
 
-Gandal, N., Hamrick, J. T., Moore, T., and Oberman, T. (2018). Price manipulation in the Bitcoin ecosystem. *Journal of Monetary Economics*, 95, 86-96.
+Gandal, N., Hamrick, J. T., Moore, T., & Oberman, T. (2018). Price manipulation in the Bitcoin ecosystem. *Journal of Monetary Economics, 95*, 86–96. https://doi.org/10.1016/j.jmoneco.2017.12.004
 
-Goodfellow, I., Pouget-Abadie, J., Mirza, M., Xu, B., Warde-Farley, D., Ozair, S., Courville, A., and Bengio, Y. (2014). Generative adversarial nets. In *Advances in Neural Information Processing Systems*, volume 27.
+Gould, M. D., Porter, M. A., Williams, S., McDonald, M., Fenn, D. J., & Howison, S. D. (2013). Limit order books. *Quantitative Finance, 13*(11), 1709–1742. https://doi.org/10.1080/14697688.2013.803148
 
-Gould, M. D., Porter, M. A., Williams, S., McDonald, M., Fenn, D. J., and Howison, S. D. (2013). Limit order books. *Quantitative Finance*, 13(11), 1709-1742.
+Griffin, J. M., & Shams, A. (2020). Is Bitcoin really untethered? *The Journal of Finance, 75*(4), 1913–1964. https://doi.org/10.1111/jofi.12903
 
-Griffin, J. M., and Shams, A. (2020). Is Bitcoin really untethered? *The Journal of Finance*, 75(4), 1913-1964.
+Hariri, S., Carrasco Kind, M., & Brunner, R. J. (2021). Extended Isolation Forest. *IEEE Transactions on Knowledge and Data Engineering, 33*(4), 1479–1489. https://doi.org/10.1109/TKDE.2019.2947676
 
-Hariri, S., Carrasco Kind, M., and Brunner, R. J. (2021). Extended Isolation Forest. *IEEE Transactions on Knowledge and Data Engineering*, 33(4), 1479-1489.
+Holland, J. H. (1992). *Adaptation in natural and artificial systems*. MIT Press.
 
-Holland, J. H. (1992). *Adaptation in Natural and Artificial Systems*. MIT Press.
+Hundman, K., Constantinou, V., Laporte, C., Colwell, I., & Soderstrom, T. (2018). Detecting spacecraft anomalies using LSTMs and nonparametric dynamic thresholding. In *Proceedings of the 24th ACM SIGKDD International Conference on Knowledge Discovery and Data Mining* (pp. 387–395). https://doi.org/10.1145/3219819.3219845
 
-Hundman, K., Constantinou, V., Laporte, C., Colwell, I., and Soderstrom, T. (2018). Detecting spacecraft anomalies using LSTMs and nonparametric dynamic thresholding. In *Proceedings of the 24th ACM SIGKDD International Conference on Knowledge Discovery and Data Mining*, pages 387-395.
+Kamps, J., & Kleinberg, B. (2018). To the moon: Defining and detecting cryptocurrency pump-and-dumps. *Crime Science, 7*(1), 1–18. https://doi.org/10.1186/s40163-018-0093-5
 
-Kamps, J., and Kleinberg, B. (2018). To the moon: Defining and detecting cryptocurrency pump-and-dumps. *Crime Science*, 7(1), 1-18.
+Kercheval, A. N., & Zhang, Y. (2015). Modelling high-frequency limit order book dynamics with support vector machines. *Quantitative Finance, 15*(8), 1315–1329. https://doi.org/10.1080/14697688.2015.1032546
 
-Kercheval, A. N., and Zhang, Y. (2015). Modelling high-frequency limit order book dynamics with support vector machines. *Quantitative Finance*, 15(8), 1315-1329.
+La Morgia, M., Mei, A., Sassi, F., & Stefa, J. (2020). Pump and dumps in the Bitcoin era: Real time detection of cryptocurrency market manipulations. In *International Conference on Computer Communications and Networks (ICCCN)*. https://doi.org/10.1109/ICCCN49398.2020.9209660
 
-La Morgia, M., Mei, A., Sassi, F., and Stefa, J. (2020). Pump and dumps in the Bitcoin era: Real time detection of cryptocurrency market manipulations. In *International Conference on Computer Communications and Networks (ICCCN)*.
+La Morgia, M., Mei, A., Sassi, F., & Stefa, J. (2023). A survey on pump and dump detection in the cryptocurrency market using machine learning. *Future Internet, 15*(8), Article 267. https://doi.org/10.3390/fi15080267
 
-La Morgia, M., Mei, A., Sassi, F., and Stefa, J. (2023). A survey on pump and dump detection in the cryptocurrency market using machine learning. *Future Internet*, 15(8), 267.
+Letteri, I. (2025). *A comparative analysis of statistical and machine learning models for outlier detection in Bitcoin limit order books*. arXiv. https://arxiv.org/abs/2507.14960
 
-Letteri, I. (2025). A comparative analysis of statistical and machine learning models for outlier detection in Bitcoin limit order books. arXiv:2507.14960.
+Liu, F. T., Ting, K. M., & Zhou, Z.-H. (2008). Isolation Forest. In *Proceedings of the Eighth IEEE International Conference on Data Mining* (pp. 413–422). IEEE. https://doi.org/10.1109/ICDM.2008.17
 
-Liu, F. T., Ting, K. M., and Zhou, Z.-H. (2008). Isolation Forest. In *Proceedings of the Eighth IEEE International Conference on Data Mining (ICDM)*, pages 413-422.
+Malhotra, P., Vig, L., Shroff, G., & Agarwal, P. (2015). Long short term memory networks for anomaly detection in time series. In *ESANN*.
 
-Malhotra, P., Vig, L., Shroff, G., and Agarwal, P. (2015). Long short term memory networks for anomaly detection in time series. In *ESANN*.
+Pang, G., Shen, C., Cao, L., & Hengel, A. V. D. (2021). Deep learning for anomaly detection: A review. *ACM Computing Surveys, 54*(2), 1–38. https://doi.org/10.1145/3439950
 
-Pang, G., Shen, C., Cao, L., and Hengel, A. V. D. (2021). Deep learning for anomaly detection: A review. *ACM Computing Surveys*, 54(2), 1-38.
+Paszke, A., Gross, S., Massa, F., Lerer, A., Bradbury, J., Chanan, G., Killeen, T., Lin, Z., Gimelshein, N., Antiga, L., Desmaison, A., Kopf, A., Yang, E., DeVito, Z., Raison, M., Tejani, A., Chilamkurthy, S., Steiner, B., Fang, L., Bai, J., & Chintala, S. (2019). PyTorch: An imperative style, high-performance deep learning library. In *Advances in Neural Information Processing Systems* (Vol. 32).
 
-Paszke, A., Gross, S., Massa, F., Lerer, A., Bradbury, J., Chanan, G., Killeen, T., Lin, Z., Gimelshein, N., Antiga, L., Desmaison, A., Kopf, A., Yang, E., DeVito, Z., Raison, M., Tejani, A., Chilamkurthy, S., Steiner, B., Fang, L., Bai, J., and Chintala, S. (2019). PyTorch: An imperative style, high-performance deep learning library. In *Advances in Neural Information Processing Systems*, volume 32.
+Pedregosa, F., Varoquaux, G., Gramfort, A., Michel, V., Thirion, B., Grisel, O., Blondel, M., Prettenhofer, P., Weiss, R., Dubourg, V., Vanderplas, J., Passos, A., Cournapeau, D., Brucher, M., Perrot, M., & Duchesnay, É. (2011). Scikit-learn: Machine learning in Python. *Journal of Machine Learning Research, 12*, 2825–2830.
 
-Pedregosa, F., Varoquaux, G., Gramfort, A., Michel, V., Thirion, B., Grisel, O., Blondel, M., Prettenhofer, P., Weiss, R., Dubourg, V., Vanderplas, J., Passos, A., Cournapeau, D., Brucher, M., Perrot, M., and Duchesnay, E. (2011). Scikit-learn: Machine learning in Python. *Journal of Machine Learning Research*, 12, 2825-2830.
+Ruff, L., Vandermeulen, R., Goernitz, N., Deecke, L., Siddiqui, S. A., Binder, A., Müller, E., & Kloft, M. (2018). Deep one-class classification. In *Proceedings of the 35th International Conference on Machine Learning* (pp. 4393–4402). PMLR.
 
-Ruff, L., Vandermeulen, R., Goernitz, N., Deecke, L., Siddiqui, S. A., Binder, A., Muller, E., and Kloft, M. (2018). Deep one-class classification. In *Proceedings of the 35th International Conference on Machine Learning*, pages 4393-4402.
+Ruff, L., Kauffmann, J. R., Vandermeulen, R. A., Montavon, G., Samek, W., Kloft, M., Dietterich, T. G., & Müller, K.-R. (2021). A unifying review of deep and shallow anomaly detection. *Proceedings of the IEEE, 109*(5), 756–795. https://doi.org/10.1109/JPROC.2021.3052449
 
-Ruff, L., Kauffmann, J. R., Vandermeulen, R. A., Montavon, G., Samek, W., Kloft, M., Dietterich, T. G., and Muller, K.-R. (2021). A unifying review of deep and shallow anomaly detection. *Proceedings of the IEEE*, 109(5), 756-795.
+Saito, T., & Rehmsmeier, M. (2015). The precision-recall plot is more informative than the ROC plot when evaluating binary classifiers on imbalanced datasets. *PLOS ONE, 10*(3), Article e0118432. https://doi.org/10.1371/journal.pone.0118432
 
-Saito, T., and Rehmsmeier, M. (2015). The precision-recall plot is more informative than the ROC plot when evaluating binary classifiers on imbalanced datasets. *PLOS ONE*, 10(3), e0118432.
+Schlegl, T., Seeböck, P., Waldstein, S. M., Schmidt-Erfurth, U., & Langs, G. (2017). Unsupervised anomaly detection with generative adversarial networks to guide marker discovery. In *Information Processing in Medical Imaging* (pp. 146–157). Springer. https://doi.org/10.1007/978-3-319-59050-9_12
 
-Schlegl, T., Seebock, P., Waldstein, S. M., Schmidt-Erfurth, U., and Langs, G. (2017). Unsupervised anomaly detection with generative adversarial networks to guide marker discovery. In *Information Processing in Medical Imaging (IPMI)*, pages 146-157. Springer.
+Schlegl, T., Seeböck, P., Waldstein, S. M., Langs, G., & Schmidt-Erfurth, U. (2019). f-AnoGAN: Fast unsupervised anomaly detection with generative adversarial networks. *Medical Image Analysis, 54*, 30–44. https://doi.org/10.1016/j.media.2019.01.010
 
-Schlegl, T., Seebock, P., Waldstein, S. M., Langs, G., and Schmidt-Erfurth, U. (2019). f-AnoGAN: Fast unsupervised anomaly detection with generative adversarial networks. *Medical Image Analysis*, 54, 30-44.
+Schölkopf, B., Platt, J. C., Shawe-Taylor, J., Smola, A. J., & Williamson, R. C. (2001). Estimating the support of a high-dimensional distribution. *Neural Computation, 13*(7), 1443–1471. https://doi.org/10.1162/089976601750264965
 
-Scholkopf, B., Platt, J. C., Shawe-Taylor, J., Smola, A. J., and Williamson, R. C. (2001). Estimating the support of a high-dimensional distribution. *Neural Computation*, 13(7), 1443-1471.
+Sirignano, J., & Cont, R. (2019). Universal features of price formation in financial markets: Perspectives from deep learning. *Quantitative Finance, 19*(9), 1449–1459. https://doi.org/10.1080/14697688.2019.1633012
 
-Sirignano, J., and Cont, R. (2019). Universal features of price formation in financial markets: Perspectives from deep learning. *Quantitative Finance*, 19(9), 1449-1459.
+Tax, D. M. J., & Duin, R. P. W. (2004). Support vector data description. *Machine Learning, 54*(1), 45–66. https://doi.org/10.1023/B:MACH.0000008084.60811.49
 
-Tax, D. M. J., and Duin, R. P. W. (2004). Support vector data description. *Machine Learning*, 54(1), 45-66.
+Tsantekidis, A., Passalis, N., Tefas, A., Kanniainen, J., Gabbouj, M., & Iosifidis, A. (2017). Forecasting stock prices from the limit order book using convolutional neural networks. In *IEEE Conference on Business Informatics* (pp. 7–12). https://doi.org/10.1109/CBI.2017.23
 
-Tsantekidis, A., Passalis, N., Tefas, A., Kanniainen, J., Gabbouj, M., and Iosifidis, A. (2017). Forecasting stock prices from the limit order book using convolutional neural networks. In *IEEE Conference on Business Informatics*, pages 7-12.
+Xu, J., & Livshits, B. (2019). The anatomy of a cryptocurrency pump-and-dump scheme. In *28th USENIX Security Symposium* (pp. 1609–1625).
 
-Xu, J., and Livshits, B. (2019). The anatomy of a cryptocurrency pump-and-dump scheme. In *28th USENIX Security Symposium*, pages 1609-1625.
+Zhang, Z., Zohren, S., & Roberts, S. (2019). DeepLOB: Deep convolutional neural networks for limit order books. *IEEE Transactions on Signal Processing, 67*(11), 3001–3012. https://doi.org/10.1109/TSP.2019.2907260
 
-Zhang, Z., Zohren, S., and Roberts, S. (2019). DeepLOB: Deep convolutional neural networks for limit order books. *IEEE Transactions on Signal Processing*, 67(11), 3001-3012.
+Zhou, C., & Paffenroth, R. C. (2017). Anomaly detection with robust deep autoencoders. In *Proceedings of the 23rd ACM SIGKDD International Conference on Knowledge Discovery and Data Mining* (pp. 665–674). https://doi.org/10.1145/3097983.3098052
 
-Zhou, C., and Paffenroth, R. C. (2017). Anomaly detection with robust deep autoencoders. In *Proceedings of the 23rd ACM SIGKDD International Conference on Knowledge Discovery and Data Mining*, pages 665-674.
-
-Zong, B., Song, Q., Min, M. R., Cheng, W., Lumezanu, C., Cho, D., and Chen, H. (2018). Deep autoencoding Gaussian mixture model for unsupervised anomaly detection. In *International Conference on Learning Representations*.
+Zong, B., Song, Q., Min, M. R., Cheng, W., Lumezanu, C., Cho, D., & Chen, H. (2018). Deep autoencoding Gaussian mixture model for unsupervised anomaly detection. In *International Conference on Learning Representations*.
