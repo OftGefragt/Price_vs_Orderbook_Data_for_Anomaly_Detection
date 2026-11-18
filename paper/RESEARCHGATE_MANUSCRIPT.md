@@ -68,6 +68,8 @@ We focus on that gap: fixed detectors, BTC→ETH transfer, two input levels, dee
 
 The underlying 1-minute series covers spring 2021 (BTC train about 2021-03-31 to 2021-05-31; ETH test about 2021-04-06 to 2021-04-19).
 
+L1 includes Volume alongside OHLC because a strongly collinear volume–price pair would risk redundant, linearly dependent features; multiple studies instead report only a weak linear link—about 3.20% in Dino (2023) and 3.25% specifically for index funds in Kaya (2025)—so Volume is nearly linearly independent of price and can be added without expected extra multicollinearity.
+
 **Scale-free L1 variant.** For classical and controlled deep runs, absolute OHLCV levels are replaced by returns / relative transforms so BTC and ETH share a comparable numeric regime (details in `results_v2/task5_ood_splits/` and `results_v2/scalefree_deep/`).
 
 ### 3.2 Level 2
@@ -258,6 +260,8 @@ Cont, R., & de Larrard, A. (2013). Price dynamics in a Markovian limit order mar
 
 Davis, J., & Goadrich, M. (2006). The relationship between Precision-Recall and ROC curves. In *Proceedings of the 23rd International Conference on Machine Learning* (pp. 233–240). https://doi.org/10.1145/1143844.1143874
 
+Dino, J. (2023). The effect of trading volume on stock price. *Gettysburg College Headquarters, 2*, Article 5.
+
 Eiben, A. E., & Smith, J. E. (2015). *Introduction to evolutionary computing* (2nd ed.). Springer. https://doi.org/10.1007/978-3-662-44874-8
 
 Gandal, N., Hamrick, J. T., Moore, T., & Oberman, T. (2018). Price manipulation in the Bitcoin ecosystem. *Journal of Monetary Economics, 95*, 86–96. https://doi.org/10.1016/j.jmoneco.2017.12.004
@@ -273,6 +277,8 @@ Holland, J. H. (1992). *Adaptation in natural and artificial systems*. MIT Press
 Hundman, K., Constantinou, V., Laporte, C., Colwell, I., & Soderstrom, T. (2018). Detecting spacecraft anomalies using LSTMs and nonparametric dynamic thresholding. In *Proceedings of the 24th ACM SIGKDD International Conference on Knowledge Discovery and Data Mining* (pp. 387–395). https://doi.org/10.1145/3219819.3219845
 
 Kamps, J., & Kleinberg, B. (2018). To the moon: Defining and detecting cryptocurrency pump-and-dumps. *Crime Science, 7*(1), 1–18. https://doi.org/10.1186/s40163-018-0093-5
+
+Kaya, M. (2025). *An analysis of the correlation of stock volume and stock price in index funds using OLS regression*. Research Square. https://doi.org/10.21203/rs.3.rs-6786835/v1
 
 Kercheval, A. N., & Zhang, Y. (2015). Modelling high-frequency limit order book dynamics with support vector machines. *Quantitative Finance, 15*(8), 1315–1329. https://doi.org/10.1080/14697688.2015.1032546
 
