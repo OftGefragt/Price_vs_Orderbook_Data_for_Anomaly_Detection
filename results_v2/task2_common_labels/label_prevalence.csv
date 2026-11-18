@@ -1,0 +1,7 @@
+level,label_kind,n_windows,k_positives,base_rate,target_rate,cutoff_amplitude,n_tied_at_cutoff_amp,tie_break
+L1,primary_price_range,3716,37,0.009956942949407965,0.01,144.34000000000015,3,amplitude_desc_then_index_asc
+L1,secondary_legacy,3716,37,0.009956942949407965,0.01,0.004219556066686225,3,amplitude_desc_then_index_asc
+L1,alternative_abs_log_return,3716,37,0.009956942949407965,0.01,0.1657700592060838,1,amplitude_desc_then_index_asc
+L2,primary_price_range,3336,33,0.009892086330935251,0.01,161.75499999999965,1,amplitude_desc_then_index_asc
+L2,secondary_legacy,3336,33,0.009892086330935251,0.01,1.8800714889615717,14,amplitude_desc_then_index_asc
+L2,alternative_abs_log_return,3336,33,0.009892086330935251,0.01,0.19902660686821427,1,amplitude_desc_then_index_asc

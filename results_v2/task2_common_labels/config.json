@@ -1,0 +1,28 @@
+{
+  "task": 2,
+  "primary_label": "primary_price_range (L1 Close range; L2 mid-price range)",
+  "secondary_label": "secondary_legacy (baseline circular / scaled close range)",
+  "alternative_label": "alternative_abs_log_return",
+  "positive_rate": 0.01,
+  "window": 30,
+  "alignment": {
+    "l1_5min_bars": 3745,
+    "l2_bars": 3365,
+    "l2_unique_5min_floors": 3365,
+    "intersection_5min_timestamps": 3365,
+    "l2_time_start": "2021-04-07 11:37:49.861733+00:00",
+    "l2_time_end": "2021-04-19 09:50:00.345392+00:00",
+    "l1_time_start": "2021-04-06 21:00:00+00:00",
+    "l1_time_end": "2021-04-19 21:00:00+00:00"
+  },
+  "l2_midpoint_source": "Level 2 Analysis/Anomaly-Detection-in-Cryptocurrency-Markets-using-1D-Convolutional-AnoGAN-main/data/test/ETH_5min.csv",
+  "l2_btc_midpoint_available": false,
+  "notes": [
+    "Primary label uses raw Close (L1) or mid-price (L2); not model input features for L2.",
+    "L2 primary is non-circular w.r.t. the 30 book features.",
+    "Strict bar-by-bar timestamp alignment between L1 5-min aggregate and L2 system_time is partial; see alignment table."
+  ],
+  "seeds": [
+    42
+  ]
+}
