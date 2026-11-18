@@ -10,15 +10,18 @@ detector families are evaluated under one protocol:
 
 Models train on Bitcoin and score Ethereum.
 
-## Start here for paper-quality numbers
+## Publish this preprint
 
-1. Open `notebooks/L1_vs_L2_Comparison_Colab.ipynb` in Google Colab.
-2. Set the runtime to GPU.
-3. Keep `MODE = "strong"`.
-4. Run all cells.
-5. Download the files under `results/`.
+1. Open `paper/RESEARCHGATE_MANUSCRIPT.html` in a browser.
+2. Print → Save as PDF.
+3. Follow `paper/HOW_TO_PUBLISH.md` (ResearchGate first, arXiv optional).
+4. Main numbers: `results/matched_2021_spring/`.
 
-Local equivalent:
+Manuscript source: `paper/RESEARCHGATE_MANUSCRIPT.md`
+
+## Reproduce paper-quality numbers
+
+Matched protocol (recommended):
 
 ```bash
 git clone https://github.com/OftGefragt/Price_vs_Orderbook_Data_for_Anomaly_Detection.git
@@ -26,8 +29,10 @@ cd Price_vs_Orderbook_Data_for_Anomaly_Detection
 python -m venv .venv
 source .venv/bin/activate
 pip install -r requirements-paper.txt
-python -m paper_eval.run_comparison --mode strong
+python -m paper_eval.run_comparison --mode matched --regime 2021_spring
 ```
+
+Colab: open `notebooks/L1_vs_L2_Comparison_Colab.ipynb` (set `MODE = "matched"` if available, else `"strong"`).
 
 ### Outputs written by a strong run
 

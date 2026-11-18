@@ -1,33 +1,49 @@
-# How to publish this manuscript on arXiv
+# How to publish this preprint
 
-## What is ready
+## What is ready in this repository
 
-1. `references.bib` — bibliography skeleton (40+ entries)
-2. `RELATED_WORK_OUTLINE.md` — section map from citations to prose
-3. `MANUSCRIPT.md` — full draft with Table 5 numbers filled
-4. Strong-run tables already in `../results/`
+| File | Use |
+|---|---|
+| `paper/RESEARCHGATE_MANUSCRIPT.md` | **Upload source** (author–year citations) |
+| `paper/RESEARCHGATE_MANUSCRIPT.html` | Open in browser → Print → Save as PDF |
+| `paper/references.bib` | BibTeX for arXiv/LaTeX workflows |
+| `paper/MANUSCRIPT.md` | Alternate draft with BibTeX-style keys |
+| `results/matched_2021_spring/` | **Main** Table 1 numbers |
+| `results/table5_main_comparison_agg.csv` | Exploratory 1-min L1 run |
+| `results/matched_2022_bear/` | 2022 L1-only check |
+| GitHub repo | Code + data + protocols |
 
-## Before you click Submit on arXiv
+## ResearchGate (recommended first)
 
-1. Open the two arXiv papers cited as `arxiv2412pd` and `arxiv2507lob` and copy the exact author lists into `references.bib`.
-2. Skim every citation you keep in the final PDF. Remove any entry you did not actually read.
-3. Optional: convert `MANUSCRIPT.md` to LaTeX with pandoc:
+1. Open `paper/RESEARCHGATE_MANUSCRIPT.html` in Chrome/Safari.
+2. Optionally replace the contact line with your email in the `.md` file and regenerate HTML (`python paper/build_html.py`).
+3. Print → Save as PDF (A4, backgrounds on).
+4. On ResearchGate: Add new → Research → Preprint.
+5. Title: *Level-1 Price versus Level-2 Order-Book Features for Unsupervised Anomaly Detection in Cryptocurrency Markets*
+6. Upload the PDF.
+7. Paste the Abstract from the manuscript.
+8. Link the GitHub URL in the description.
+9. Categories: Machine Learning / Cryptocurrency / Anomaly Detection (as available).
+
+## arXiv (optional second step)
+
+1. Convert the markdown to PDF (pandoc if installed), or reuse the ResearchGate PDF.
+2. Create an arXiv account.
+3. Primary category: `cs.LG`; secondary: `q-fin.ST`.
+4. Upload PDF; put the GitHub URL in Comments.
+5. Note in Comments: extends UEF AI coursework (2025); OftGefragt is the code host, not a co-author.
 
 ```bash
-pandoc MANUSCRIPT.md --bibliography=references.bib -o kaya_l1_l2_anomaly.pdf
+# optional, if pandoc is installed
+pandoc paper/RESEARCHGATE_MANUSCRIPT.md -o paper/kaya_l1_l2_anomaly.pdf
 ```
 
-4. Create an arXiv account, choose primary category `cs.LG`, secondary `q-fin.ST`.
-5. Upload the PDF and, optionally, a ZIP of the code or link the GitHub URL in the comments.
-6. State in the comments that this extends UEF AI coursework (2025).
+## Do not claim
 
-## Writing notes (keep it non-generic)
+- Confirmed pump-and-dump / fraud labels (you use proxy stress labels).
+- A full 2022 L1-versus-L2 result (2022 is L1-only).
+- That OftGefragt is a co-author.
 
-- Prefer the concrete numbers already in Section 6.
-- Do not add marketing adjectives.
-- When you edit Related Work, paraphrase with the paper closed, then check the PDF.
-- Keep Limitations as written; prestige venues punish overclaiming more than modest scope.
+## Lead with
 
-## What this is not yet
-
-A camera-ready Oxford University Press journal article. It is an arXiv-ready technical report with a real bibliography and completed results tables.
+**Matched 2021 Table 1** (5-min L1 + shared forest backend). That is the confound-controlled result.
