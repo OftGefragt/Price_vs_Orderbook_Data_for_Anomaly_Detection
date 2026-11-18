@@ -1,0 +1,10 @@
+{
+  "task": 1,
+  "window": 30,
+  "baseline_rule": "amps >= np.quantile(amps, 0.99)",
+  "fixed_rule": "exact top round(n*0.01) with amp desc then index asc",
+  "seeds_for_metrics": [
+    42
+  ],
+  "note": "Positive share mismatch under baseline comes from inclusive quantile ties, especially on L2 feature-norm amplitudes."
+}

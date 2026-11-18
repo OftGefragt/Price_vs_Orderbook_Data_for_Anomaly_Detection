@@ -1,0 +1,7 @@
+level,bar,amplitude_kind,label_rule,n_test_rows,n_windows,k_positives,base_rate,target_rate,cutoff_amplitude,n_tied_at_cutoff_amp,tie_break
+L1,1min,close_range_on_scaled_close,baseline_quantile_geq,18721.0,18692.0,189.0,0.010111277551893859,0.010000000000000009,0.0017908833963576898,4.0,quantile_inclusive_geq
+L1,1min,close_range_on_scaled_close,exact_top_1pct_tiebreak,18721.0,18692.0,187.0,0.010004279905842071,0.01,0.0017908833963576898,4.0,amplitude_desc_then_index_asc
+L1,5min,close_range_on_scaled_close,baseline_quantile_geq,3745.0,3716.0,39.0,0.010495156081808395,0.010000000000000009,0.00412834770498427,2.0,quantile_inclusive_geq
+L1,5min,close_range_on_scaled_close,exact_top_1pct_tiebreak,3745.0,3716.0,37.0,0.009956942949407965,0.01,0.004219556066686225,3.0,amplitude_desc_then_index_asc
+L2,native_l2,feature_norm_range_on_scaled_l2,baseline_quantile_geq,3365.0,3336.0,44.0,0.013189448441247002,0.010000000000000009,1.8800714889615717,14.0,quantile_inclusive_geq
+L2,native_l2,feature_norm_range_on_scaled_l2,exact_top_1pct_tiebreak,3365.0,3336.0,33.0,0.009892086330935251,0.01,1.8800714889615717,14.0,amplitude_desc_then_index_asc
