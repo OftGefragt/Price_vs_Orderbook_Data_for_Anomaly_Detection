@@ -1,0 +1,15 @@
+{
+  "task": 9,
+  "seed": 42,
+  "baselines": [
+    "IsolationForest",
+    "LOF",
+    "OneClassSVM"
+  ],
+  "label": "primary_price_range exact top 1%",
+  "tracks": [
+    "L1_rawOHLCV",
+    "L1_scaleFree",
+    "L2"
+  ]
+}

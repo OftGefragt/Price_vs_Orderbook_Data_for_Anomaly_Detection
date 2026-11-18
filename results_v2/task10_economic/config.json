@@ -1,0 +1,5 @@
+{
+  "task": 10,
+  "seed": 42,
+  "note": "spread on L2 is descriptive-only / partly circular as related to book state. realized_vol/abs_return/volume are the preferred non-label economic checks."
+}
