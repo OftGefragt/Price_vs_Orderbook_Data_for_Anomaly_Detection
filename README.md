@@ -8,7 +8,7 @@ This repository studies **Bitcoin → Ethereum** unsupervised anomaly ranking wi
 
 | File | Use |
 |---|---|
-| `paper/Kaya_CrossAsset_Anomaly_Detection.docx` | **Word manuscript (APA7)** — preferred upload |
+| `paper/Cross-Asset_Crypto_Anomaly_Detection_LAUNCH.docx` | **Word manuscript (APA7)** — preferred upload |
 | `paper/RESEARCHGATE_MANUSCRIPT.md` | Author–year source |
 | `paper/RESEARCHGATE_MANUSCRIPT.html` | Browser → Print → PDF |
 | `paper/HOW_TO_PUBLISH.md` | ResearchGate / SSRN / arXiv steps |

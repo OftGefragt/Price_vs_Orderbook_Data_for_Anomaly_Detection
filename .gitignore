@@ -1,10 +1,20 @@
 
 # Large per-window score dumps (tables and protocol are committed)
-results/scores_*.npz
-results/**/scores_*.npz
-results/*_run.log
+# Large score dumps
+# Model weights / scalers (too large; regenerate or release separately)
+# OS / tool junk
+*.pkl
+*.pt
+*.pth
+*.pyc
+*.save
+.DS_Store
+.ipynb_checkpoints/
+.mplconfig/
 .venv/
 __pycache__/
-*.pyc
-.ipynb_checkpoints/
-
+results/**/scores_*.csv
+results/**/scores_*.npz
+results/*_run.log
+results/scores_*.npz
+results_v2/**/scores_*.csv
